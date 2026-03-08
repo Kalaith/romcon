@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --rose-cream: #fff8f3;
+  --rose-ink: #512b2b;
+  --rose-accent: #d7606f;
+  --rose-accent-strong: #b94657;
+  --rose-gold: #f1be8b;
+  --rose-panel: rgba(255, 255, 255, 0.7);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Manrope', sans-serif;
+  color: var(--rose-ink);
+  background:
+    radial-gradient(circle at top left, rgba(215, 96, 111, 0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(241, 190, 139, 0.28), transparent 32%),
+    linear-gradient(180deg, #fffaf5 0%, #fff3ec 48%, #fffdf9 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: 'Fraunces', serif;
+}
+
+.glass-panel {
+  background: var(--rose-panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(185, 70, 87, 0.12);
+  box-shadow: 0 16px 60px rgba(93, 53, 61, 0.08);
+}
