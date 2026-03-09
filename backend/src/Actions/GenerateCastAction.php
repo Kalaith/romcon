@@ -16,6 +16,7 @@ final class GenerateCastAction
         $pairing = $input['pairing'] ?? null;
         $premise = $input['premise'] ?? null;
         $setting = trim((string) ($input['setting'] ?? 'modern contemporary'));
+        $heatLevel = trim((string) ($input['heat_level'] ?? 'sweet'));
         $romanceConfiguration = trim((string) ($input['romance_configuration'] ?? 'm/f'));
         $mainCharacterFocus = trim((string) ($input['main_character_focus'] ?? ''));
         $romanceStructureNotes = trim((string) ($input['romance_structure_notes'] ?? ''));
@@ -38,6 +39,7 @@ final class GenerateCastAction
                 'Generate supporting cast architecture',
                 $promptBuilder->compactLines(
                     "Setting: {$setting}",
+                    $promptBuilder->heatLevelLine($heatLevel),
                     "Core romance configuration: {$romanceConfiguration}",
                     $mainCharacterFocus !== '' ? "Main character focus: {$mainCharacterFocus}" : '',
                     $romanceStructureNotes !== '' ? "Romance structure notes: {$romanceStructureNotes}" : '',

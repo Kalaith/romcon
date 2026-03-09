@@ -2,6 +2,75 @@ import api from './client';
 import type { CastMember, CharacterPack, PairingResult, Plan, PremiseResult } from '../types';
 
 export const generatorApi = {
+  async concept(payload: {
+    plan_id?: number;
+    title: string;
+    concept_brief: string;
+    setting: string;
+    romance_configuration: string;
+    main_character_focus: string;
+    romance_structure_notes: string;
+    pov_mode: string;
+    pov_notes: string;
+    dominant_romance_arc: string;
+    central_external_pressure: string;
+    emotional_question: string;
+    heat_level: string;
+    target_words: number;
+    trope_notes: string[];
+    notes: string;
+    flavor_seeds: string[];
+  }): Promise<Plan> {
+    const response = await api.post('/generate/concept', payload);
+    return response.data.data as Plan;
+  },
+
+  async conceptPolish(payload: {
+    plan_id?: number;
+    title: string;
+    concept_brief: string;
+    setting: string;
+    romance_configuration: string;
+    main_character_focus: string;
+    romance_structure_notes: string;
+    pov_mode: string;
+    pov_notes: string;
+    dominant_romance_arc: string;
+    central_external_pressure: string;
+    emotional_question: string;
+    heat_level: string;
+    target_words: number;
+    trope_notes: string[];
+    notes: string;
+    flavor_seeds: string[];
+  }): Promise<Plan> {
+    const response = await api.post('/generate/concept-polish', payload);
+    return response.data.data as Plan;
+  },
+
+  async conceptExpand(payload: {
+    plan_id?: number;
+    title: string;
+    concept_brief: string;
+    setting: string;
+    romance_configuration: string;
+    main_character_focus: string;
+    romance_structure_notes: string;
+    pov_mode: string;
+    pov_notes: string;
+    dominant_romance_arc: string;
+    central_external_pressure: string;
+    emotional_question: string;
+    heat_level: string;
+    target_words: number;
+    trope_notes: string[];
+    notes: string;
+    flavor_seeds: string[];
+  }): Promise<Plan> {
+    const response = await api.post('/generate/concept-expand', payload);
+    return response.data.data as Plan;
+  },
+
   async characterPack(payload: {
     plan_id?: number;
     title: string;

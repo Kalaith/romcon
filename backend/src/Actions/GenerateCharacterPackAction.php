@@ -37,7 +37,7 @@ final class GenerateCharacterPackAction
                 $promptBuilder->compactLines(
                     "Brief: {$brief}",
                     "Setting: {$setting}",
-                    "Heat level: {$heatLevel}",
+                    $promptBuilder->heatLevelLine($heatLevel),
                     "Core romance configuration: {$romanceConfiguration}",
                     $mainCharacterFocus !== '' ? "Main character focus: {$mainCharacterFocus}" : '',
                     $romanceStructureNotes !== '' ? "Romance structure notes: {$romanceStructureNotes}" : '',

@@ -6,6 +6,16 @@ namespace App\Services;
 
 final class RomconPromptBuilder
 {
+    private const HEAT_LEVEL_GUIDANCE = [
+        'chaste' => 'no sex on page',
+        'sweet' => 'kissing and affection, fade-to-black',
+        'warm' => 'sensual build, light on-page detail',
+        'steamy' => 'explicit scenes, moderate detail',
+        'spicy' => 'multiple explicit scenes, strong descriptive detail',
+        'smutty' => 'explicit scenes are frequent and prominent',
+        'erotic' => 'sex is a core structural element of the story',
+    ];
+
     /**
      * @param list<string> $contextLines
      * @param list<string> $taskLines
@@ -31,6 +41,14 @@ final class RomconPromptBuilder
             static fn (string $line): string => trim($line),
             $lines
         ), static fn (string $line): bool => $line !== ''));
+    }
+
+    public function heatLevelLine(string $heatLevel): string
+    {
+        $key = strtolower(trim($heatLevel));
+        $description = self::HEAT_LEVEL_GUIDANCE[$key] ?? 'unspecified intimacy level';
+
+        return "Heat level: {$key} ({$description})";
     }
 
     private function planningRulesBlock(): string

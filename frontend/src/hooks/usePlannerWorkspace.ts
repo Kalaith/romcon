@@ -6,14 +6,21 @@ import { flavorSeedApi } from '../api/flavorSeeds';
 import { generatorApi } from '../api/generators';
 import { writerProfileApi } from '../api/writerProfile';
 import type { WriterProfilePayload } from '../api/writerProfile';
+import { normalizeHeatLevel } from '../constants/heatLevels';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlannerStore } from '../stores/usePlannerStore';
 import type { CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../types';
 
 export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary';
-export type PendingRegeneration = 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | null;
+export type PendingRegeneration = 'concept' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | null;
+export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | null;
 
 const regenerationModalCopy: Record<Exclude<PendingRegeneration, null>, { title: string; body: string; confirmLabel: string }> = {
+  concept: {
+    title: 'Replace the current concept board?',
+    body: 'Generating a concept will overwrite the current title, concept brief, setting, romance framing, POV guidance, and story-core concept fields for this story.',
+    confirmLabel: 'Replace Concept Board',
+  },
   characters: {
     title: 'Replace the current lead packs?',
     body: 'Regenerating characters will overwrite the current Lead One and Lead Two packs in this story. Use this only if you are happy to replace the existing versions.',
@@ -42,7 +49,7 @@ const regenerationModalCopy: Record<Exclude<PendingRegeneration, null>, { title:
 };
 
 export function usePlannerWorkspace() {
-  const { user, logout, getLinkAccountUrl, getAccessToken } = useAuth();
+  const { user, logout, getLinkAccountUrl, getAccessToken, canLinkGuestToFrontpage, linkGuestToFrontpage, isLoading } = useAuth();
   const currentPlan = usePlannerStore((state) => state.currentPlan);
   const projects = usePlannerStore((state) => state.projects);
   const isSaving = usePlannerStore((state) => state.isSaving);
@@ -62,6 +69,7 @@ export function usePlannerWorkspace() {
   const [writerProfile, setWriterProfile] = useState<WriterProfilePayload | null>(null);
   const [activeView, setActiveView] = useState<WorkspaceView>('planner');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeGeneration, setActiveGeneration] = useState<ActiveGeneration>(null);
   const [plannerMessage, setPlannerMessage] = useState<string | null>(null);
   const [plannerError, setPlannerError] = useState<string | null>(null);
   const [tropeMessage, setTropeMessage] = useState<string | null>(null);
@@ -73,6 +81,15 @@ export function usePlannerWorkspace() {
   const [pendingRegeneration, setPendingRegeneration] = useState<PendingRegeneration>(null);
 
   const hasLeads = Boolean(currentPlan.lead_one && currentPlan.lead_two);
+  const hasConcept = Boolean(
+    currentPlan.concept_brief.trim() ||
+    currentPlan.setting.trim() ||
+    currentPlan.main_character_focus.trim() ||
+    currentPlan.romance_structure_notes.trim() ||
+    currentPlan.dominant_romance_arc.trim() ||
+    currentPlan.central_external_pressure.trim() ||
+    currentPlan.emotional_question.trim()
+  );
   const hasPairing = Boolean(currentPlan.pairing);
   const hasPremise = Boolean(currentPlan.premise);
   const hasStoryCast = currentPlan.cast.length > 0;
@@ -82,6 +99,17 @@ export function usePlannerWorkspace() {
   useEffect(() => {
     setPlannerMessage(storeMessage);
   }, [storeMessage]);
+
+  useEffect(() => {
+    if (!user?.is_guest) {
+      return;
+    }
+
+    const normalizedHeatLevel = normalizeHeatLevel(currentPlan.heat_level, true);
+    if (normalizedHeatLevel !== currentPlan.heat_level) {
+      setField('heat_level', normalizedHeatLevel);
+    }
+  }, [currentPlan.heat_level, setField, user?.is_guest]);
 
   useEffect(() => {
     void catalogApi.tropes().then(setTropes);
@@ -104,8 +132,23 @@ export function usePlannerWorkspace() {
     setField(field, value);
   };
 
-  const runTask = async (task: () => Promise<void>, onError: (message: string | null) => void = setPlannerError) => {
+  const scrollToStage = (stageId: string) => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(stageId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  const runTask = async (
+    task: () => Promise<void>,
+    onError: (message: string | null) => void = setPlannerError,
+    generationKind: ActiveGeneration = null
+  ) => {
     setIsGenerating(true);
+    setActiveGeneration(generationKind);
     onError(null);
     try {
       await task();
@@ -113,6 +156,7 @@ export function usePlannerWorkspace() {
       onError(taskError instanceof Error ? taskError.message : 'Something went wrong.');
     } finally {
       setIsGenerating(false);
+      setActiveGeneration(null);
     }
   };
 
@@ -271,7 +315,92 @@ export function usePlannerWorkspace() {
       upsertProject(savedPlan);
       replacePlan(savedPlan);
       await reloadLibraryEntries();
-    });
+      setPlannerMessage('Character packs generated. Next: pair them.');
+      scrollToStage('planner-step-3');
+    }, setPlannerError, 'characters');
+  };
+
+  const generateConcept = async () => {
+    await runTask(async () => {
+      const savedPlan = await generatorApi.concept({
+        plan_id: currentPlan.id,
+        title: currentPlan.title,
+        concept_brief: currentPlan.concept_brief,
+        setting: currentPlan.setting,
+        romance_configuration: currentPlan.romance_configuration,
+        main_character_focus: currentPlan.main_character_focus,
+        romance_structure_notes: currentPlan.romance_structure_notes,
+        pov_mode: currentPlan.pov_mode,
+        pov_notes: currentPlan.pov_notes,
+        dominant_romance_arc: currentPlan.dominant_romance_arc,
+        central_external_pressure: currentPlan.central_external_pressure,
+        emotional_question: currentPlan.emotional_question,
+        heat_level: currentPlan.heat_level,
+        target_words: currentPlan.target_words,
+        trope_notes: currentPlan.trope_notes,
+        notes: currentPlan.notes,
+        flavor_seeds: currentPlan.flavor_seeds,
+      });
+      upsertProject(savedPlan);
+      replacePlan(savedPlan);
+      setPlannerMessage('Concept board generated. Next: build the leads.');
+      scrollToStage('planner-step-2');
+    }, setPlannerError, 'concept');
+  };
+
+  const expandConcept = async () => {
+    await runTask(async () => {
+      const savedPlan = await generatorApi.conceptExpand({
+        plan_id: currentPlan.id,
+        title: currentPlan.title,
+        concept_brief: currentPlan.concept_brief,
+        setting: currentPlan.setting,
+        romance_configuration: currentPlan.romance_configuration,
+        main_character_focus: currentPlan.main_character_focus,
+        romance_structure_notes: currentPlan.romance_structure_notes,
+        pov_mode: currentPlan.pov_mode,
+        pov_notes: currentPlan.pov_notes,
+        dominant_romance_arc: currentPlan.dominant_romance_arc,
+        central_external_pressure: currentPlan.central_external_pressure,
+        emotional_question: currentPlan.emotional_question,
+        heat_level: currentPlan.heat_level,
+        target_words: currentPlan.target_words,
+        trope_notes: currentPlan.trope_notes,
+        notes: currentPlan.notes,
+        flavor_seeds: currentPlan.flavor_seeds,
+      });
+      upsertProject(savedPlan);
+      replacePlan(savedPlan);
+      setPlannerMessage('Concept board expanded. Next: build the leads.');
+      scrollToStage('planner-step-2');
+    }, setPlannerError, 'concept_expand');
+  };
+
+  const polishConcept = async () => {
+    await runTask(async () => {
+      const savedPlan = await generatorApi.conceptPolish({
+        plan_id: currentPlan.id,
+        title: currentPlan.title,
+        concept_brief: currentPlan.concept_brief,
+        setting: currentPlan.setting,
+        romance_configuration: currentPlan.romance_configuration,
+        main_character_focus: currentPlan.main_character_focus,
+        romance_structure_notes: currentPlan.romance_structure_notes,
+        pov_mode: currentPlan.pov_mode,
+        pov_notes: currentPlan.pov_notes,
+        dominant_romance_arc: currentPlan.dominant_romance_arc,
+        central_external_pressure: currentPlan.central_external_pressure,
+        emotional_question: currentPlan.emotional_question,
+        heat_level: currentPlan.heat_level,
+        target_words: currentPlan.target_words,
+        trope_notes: currentPlan.trope_notes,
+        notes: currentPlan.notes,
+        flavor_seeds: currentPlan.flavor_seeds,
+      });
+      upsertProject(savedPlan);
+      replacePlan(savedPlan);
+      setPlannerMessage('Concept board spellchecked and clarified.');
+    }, setPlannerError, 'concept_polish');
   };
 
   const generatePairing = async () => {
@@ -308,7 +437,9 @@ export function usePlannerWorkspace() {
       });
       upsertProject(savedPlan);
       replacePlan(savedPlan);
-    });
+      setPlannerMessage('Pairing generated. Next: build the premise.');
+      scrollToStage('planner-step-4');
+    }, setPlannerError, 'pairing');
   };
 
   const generatePremise = async () => {
@@ -345,7 +476,9 @@ export function usePlannerWorkspace() {
       });
       upsertProject(savedPlan);
       replacePlan(savedPlan);
-    });
+      setPlannerMessage('Premise generated. Next: detail the chapter plan.');
+      scrollToStage('planner-step-5');
+    }, setPlannerError, 'premise');
   };
 
   const generateCast = async () => {
@@ -388,7 +521,8 @@ export function usePlannerWorkspace() {
         await reloadLibraryEntries();
         setCastMessage('Story cast generated and library refreshed.');
       },
-      setCastError
+      setCastError,
+      'cast'
     );
   };
 
@@ -429,28 +563,43 @@ export function usePlannerWorkspace() {
       });
       upsertProject(savedPlan);
       replacePlan(savedPlan);
-      setPlannerMessage('Chapter details generated.');
-    });
+      setPlannerMessage('Chapter details generated. Next: save and review the story.');
+      scrollToStage('planner-step-6');
+    }, setPlannerError, 'chapters');
   };
 
   const generateCastMemberFromPrompt = async (prompt: string): Promise<CastMember> => {
-    return generatorApi.castMember({
-      prompt,
-      setting: currentPlan.setting,
-      romance_configuration: currentPlan.romance_configuration,
-      main_character_focus: currentPlan.main_character_focus,
-      romance_structure_notes: currentPlan.romance_structure_notes,
-      pov_mode: currentPlan.pov_mode,
-      pov_notes: currentPlan.pov_notes,
-      dominant_romance_arc: currentPlan.dominant_romance_arc,
-      central_external_pressure: currentPlan.central_external_pressure,
-      emotional_question: currentPlan.emotional_question,
-      flavor_seeds: currentPlan.flavor_seeds,
-      lead_one: currentPlan.lead_one,
-      lead_two: currentPlan.lead_two,
-      pairing: currentPlan.pairing,
-      premise: currentPlan.premise,
-    });
+    let generatedMember: CastMember | null = null;
+
+    await runTask(
+      async () => {
+        generatedMember = await generatorApi.castMember({
+          prompt,
+          setting: currentPlan.setting,
+          romance_configuration: currentPlan.romance_configuration,
+          main_character_focus: currentPlan.main_character_focus,
+          romance_structure_notes: currentPlan.romance_structure_notes,
+          pov_mode: currentPlan.pov_mode,
+          pov_notes: currentPlan.pov_notes,
+          dominant_romance_arc: currentPlan.dominant_romance_arc,
+          central_external_pressure: currentPlan.central_external_pressure,
+          emotional_question: currentPlan.emotional_question,
+          flavor_seeds: currentPlan.flavor_seeds,
+          lead_one: currentPlan.lead_one,
+          lead_two: currentPlan.lead_two,
+          pairing: currentPlan.pairing,
+          premise: currentPlan.premise,
+        });
+      },
+      setCastError,
+      'cast_member'
+    );
+
+    if (generatedMember === null) {
+      throw new Error('Unable to generate cast member.');
+    }
+
+    return generatedMember;
   };
 
   const createFlavorSeed = async (label: string) => {
@@ -509,6 +658,7 @@ export function usePlannerWorkspace() {
 
   const requestGeneration = (kind: Exclude<PendingRegeneration, null>) => {
     const needsConfirmation =
+      (kind === 'concept' && hasConcept) ||
       (kind === 'characters' && hasLeads) ||
       (kind === 'pairing' && hasPairing) ||
       (kind === 'premise' && hasPremise) ||
@@ -516,7 +666,9 @@ export function usePlannerWorkspace() {
       (kind === 'cast' && hasStoryCast);
 
     if (!needsConfirmation) {
-      if (kind === 'characters') {
+      if (kind === 'concept') {
+        void generateConcept();
+      } else if (kind === 'characters') {
         void generateCharacters();
       } else if (kind === 'pairing') {
         void generatePairing();
@@ -537,7 +689,9 @@ export function usePlannerWorkspace() {
     const pending = pendingRegeneration;
     setPendingRegeneration(null);
 
-    if (pending === 'characters') {
+    if (pending === 'concept') {
+      void generateConcept();
+    } else if (pending === 'characters') {
       void generateCharacters();
     } else if (pending === 'pairing') {
       void generatePairing();
@@ -565,8 +719,11 @@ export function usePlannerWorkspace() {
 
   return {
     user,
+    isLoading,
     logout,
     getLinkAccountUrl,
+    canLinkGuestToFrontpage,
+    linkGuestToFrontpage,
     currentPlan,
     projects,
     isSaving,
@@ -577,6 +734,7 @@ export function usePlannerWorkspace() {
     activeView,
     setActiveView,
     isGenerating,
+    activeGeneration,
     plannerMessage,
     plannerError,
     tropeMessage,
@@ -587,6 +745,7 @@ export function usePlannerWorkspace() {
     writerProfileError,
     pendingRegeneration,
     hasLeads,
+    hasConcept,
     hasPairing,
     hasPremise,
     hasStoryCast,
@@ -612,6 +771,9 @@ export function usePlannerWorkspace() {
     createTrope,
     deleteTrope,
     requestGeneration,
+    generateConcept,
+    expandConcept,
+    polishConcept,
     confirmRegeneration,
     cancelRegeneration,
     generateCastMemberFromPrompt,

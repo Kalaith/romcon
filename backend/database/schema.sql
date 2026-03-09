@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS plans (
     cast_json LONGTEXT NULL,
     chapter_details_json LONGTEXT NULL,
     heat_level VARCHAR(40) NOT NULL DEFAULT 'sweet',
-    target_words INT NOT NULL DEFAULT 30000,
+    target_words INT NOT NULL DEFAULT 45000,
     summary TEXT NULL,
     lead_one_json LONGTEXT NULL,
     lead_two_json LONGTEXT NULL,

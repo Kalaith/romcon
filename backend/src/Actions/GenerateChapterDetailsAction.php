@@ -16,7 +16,8 @@ final class GenerateChapterDetailsAction
         $pairing = $input['pairing'] ?? null;
         $premise = $input['premise'] ?? null;
         $cast = is_array($input['cast'] ?? null) ? $input['cast'] : [];
-        $targetWords = (int) ($input['target_words'] ?? 30000);
+        $targetWords = (int) ($input['target_words'] ?? 45000);
+        $heatLevel = trim((string) ($input['heat_level'] ?? 'sweet'));
         $romanceConfiguration = trim((string) ($input['romance_configuration'] ?? 'm/f'));
         $mainCharacterFocus = trim((string) ($input['main_character_focus'] ?? ''));
         $romanceStructureNotes = trim((string) ($input['romance_structure_notes'] ?? ''));
@@ -39,6 +40,7 @@ final class GenerateChapterDetailsAction
                 'Generate detailed chapter architecture',
                 $promptBuilder->compactLines(
                     "Target words: {$targetWords}",
+                    $promptBuilder->heatLevelLine($heatLevel),
                     "Core romance configuration: {$romanceConfiguration}",
                     $mainCharacterFocus !== '' ? "Main character focus: {$mainCharacterFocus}" : '',
                     $romanceStructureNotes !== '' ? "Romance structure notes: {$romanceStructureNotes}" : '',
@@ -56,13 +58,18 @@ final class GenerateChapterDetailsAction
                 ),
                 $promptBuilder->compactLines(
                     'Generate a detailed chapter-by-chapter romantic comedy novella plan.',
+                    'Return exactly 15 chapters.',
                     'Return chapter details that deepen the existing beats and maintain novella pacing.',
+                    'Treat the 15-chapter structure as fixed unless the user explicitly changes it later.',
+                    'Aim for roughly 3,000 words per chapter as the planning target, while recognizing that drafted chapters may often land closer to 2,000 words.',
+                    'Design the plan so the complete short novel still works well in an actual range of roughly 30,000 to 45,000 words.',
                     'Keep the output as chapter architecture and scene-planning bones, not draftable prose.',
                     'Each chapter entry should be concrete enough that a writer or downstream AI can draft from it later.',
                     'Carry one dominant story lane through the chapter plan: one main romance arc, one central external pressure, and one emotional question.',
                     'State the POV owner for each chapter explicitly.',
                     'Each chapter must obey the scene contract: goal, friction or interruption, meaningful change, emotional beat, and carry-forward thread.',
-                    'Escalate the relationship in earned stages rather than looping or jumping ahead.'
+                    'Escalate the relationship in earned stages rather than looping or jumping ahead.',
+                    'Set each approximate_word_target near 3000 unless a specific chapter benefits from being modestly shorter or longer.'
                 )
             ),
             [

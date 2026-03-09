@@ -81,7 +81,7 @@ export class ChapterDetail {
   emotional_note_closes_chapter = '';
   cliffhanger_or_hook = '';
   carry_forward_thread = '';
-  approximate_word_target = 2500;
+  approximate_word_target = 3000;
 }
 
 export class CastMember {
@@ -122,7 +122,7 @@ export class Plan {
   cast: CastMember[] = [];
   chapter_details: ChapterDetail[] = [];
   heat_level = 'sweet';
-  target_words = 30000;
+  target_words = 45000;
   summary = '';
   lead_one: CharacterPack | null = null;
   lead_two: CharacterPack | null = null;

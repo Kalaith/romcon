@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Plan;
+use App\Services\HeatLevelPolicy;
 use App\Services\WriterProfileResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -39,7 +40,7 @@ final class PlanController extends BaseController
         $userId = (string) $request->getAttribute('user_id');
         $data = $this->getRequestData($request);
         $plan = new Plan();
-        $this->fillPlan($plan, $data, $userId);
+        $this->fillPlan($plan, $data, $userId, $this->isGuestRequest($request));
         $plan->save();
 
         return $this->success($response, $plan->toApiArray(), 'Plan created', 201);
@@ -79,7 +80,7 @@ final class PlanController extends BaseController
             return $this->error($response, 'Plan not found', 404);
         }
 
-        $this->fillPlan($plan, $this->getRequestData($request), $userId);
+        $this->fillPlan($plan, $this->getRequestData($request), $userId, $this->isGuestRequest($request));
         $plan->save();
 
         return $this->success($response, $plan->toApiArray(), 'Plan updated');
@@ -105,7 +106,7 @@ final class PlanController extends BaseController
             ->first();
     }
 
-    private function fillPlan(Plan $plan, array $data, string $userId): void
+    private function fillPlan(Plan $plan, array $data, string $userId, bool $isGuest): void
     {
         $now = date('Y-m-d H:i:s');
         $plan->created_by = $userId;
@@ -123,8 +124,8 @@ final class PlanController extends BaseController
         $plan->flavor_seeds_json = json_encode($data['flavor_seeds'] ?? []);
         $plan->cast_json = json_encode($data['cast'] ?? []);
         $plan->chapter_details_json = json_encode($data['chapter_details'] ?? []);
-        $plan->heat_level = trim((string) ($data['heat_level'] ?? 'sweet'));
-        $plan->target_words = max(10000, (int) ($data['target_words'] ?? 30000));
+        $plan->heat_level = HeatLevelPolicy::normalize((string) ($data['heat_level'] ?? 'sweet'), $isGuest);
+        $plan->target_words = max(10000, (int) ($data['target_words'] ?? 45000));
         $plan->summary = isset($data['summary']) ? (string) $data['summary'] : null;
         $plan->lead_one_json = json_encode($data['lead_one'] ?? null);
         $plan->lead_two_json = json_encode($data['lead_two'] ?? null);
@@ -136,6 +137,12 @@ final class PlanController extends BaseController
             $plan->created_at = $now;
         }
         $plan->updated_at = $now;
+    }
+
+    private function isGuestRequest(Request $request): bool
+    {
+        $user = $request->getAttribute('user');
+        return is_array($user) && (($user['is_guest'] ?? false) === true);
     }
 
     private function buildExportPayload(Plan $plan): array

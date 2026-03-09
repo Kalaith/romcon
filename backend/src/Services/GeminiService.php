@@ -14,13 +14,26 @@ final class GeminiService
 
     public function __construct(?string $userId = null)
     {
-        $this->apiKey = trim((string) ($_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY') ?: ''));
-        $this->endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        if (!array_key_exists('GEMINI_API_KEY', $_ENV)) {
+            throw new RuntimeException('GEMINI_API_KEY is not configured');
+        }
+        if (!array_key_exists('GEMINI_MODEL', $_ENV)) {
+            throw new RuntimeException('GEMINI_MODEL is not configured');
+        }
+
+        $this->apiKey = trim((string) $_ENV['GEMINI_API_KEY']);
+        $model = trim((string) $_ENV['GEMINI_MODEL']);
         $this->writerProfile = (new WriterProfileResolver())->getEffectiveProfile($userId);
 
         if ($this->apiKey === '') {
             throw new RuntimeException('GEMINI_API_KEY is not configured');
         }
+
+        if ($model === '') {
+            throw new RuntimeException('GEMINI_MODEL is not configured');
+        }
+
+        $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
     }
 
     public function generateJson(string $taskPrompt, array $schemaHint): array
@@ -52,7 +65,7 @@ final class GeminiService
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
-        if (($_ENV['APP_ENV'] ?? 'production') === 'development') {
+        if (($_ENV['APP_ENV'] ?? '') === 'development') {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         }

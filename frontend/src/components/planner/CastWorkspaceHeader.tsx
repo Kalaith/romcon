@@ -33,7 +33,7 @@ export function CastWorkspaceHeader({
         </div>
         <div className="flex flex-wrap gap-3">
           <button
-            className="rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => void onGenerateStoryCast()}
             disabled={isGenerating || !canGenerate}
           >

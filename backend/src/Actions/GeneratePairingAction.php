@@ -14,6 +14,7 @@ final class GeneratePairingAction
         $leadOne = $input['lead_one'] ?? null;
         $leadTwo = $input['lead_two'] ?? null;
         $preferredTrope = trim((string) ($input['preferred_trope'] ?? ''));
+        $heatLevel = trim((string) ($input['heat_level'] ?? 'sweet'));
         $romanceConfiguration = trim((string) ($input['romance_configuration'] ?? 'm/f'));
         $mainCharacterFocus = trim((string) ($input['main_character_focus'] ?? ''));
         $romanceStructureNotes = trim((string) ($input['romance_structure_notes'] ?? ''));
@@ -35,6 +36,7 @@ final class GeneratePairingAction
                 'Layer 2: Structured Outline',
                 'Evaluate the core pairing',
                 $promptBuilder->compactLines(
+                    $promptBuilder->heatLevelLine($heatLevel),
                     "Core romance configuration: {$romanceConfiguration}",
                     $mainCharacterFocus !== '' ? "Main character focus: {$mainCharacterFocus}" : '',
                     $romanceStructureNotes !== '' ? "Romance structure notes: {$romanceStructureNotes}" : '',

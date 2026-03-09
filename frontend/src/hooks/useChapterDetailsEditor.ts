@@ -26,7 +26,7 @@ export function useChapterDetailsEditor({ chapterDetails, premise, targetWords, 
   };
 
   const startBlankPlan = () => {
-    setDraft([createChapterDetail(1, '', Math.max(1000, Math.round(targetWords / 12)))]);
+    setDraft(buildSeededChapters(null, targetWords));
     setIsEditing(true);
   };
 
@@ -47,7 +47,7 @@ export function useChapterDetailsEditor({ chapterDetails, premise, targetWords, 
     setDraft((current) =>
       normaliseChapterDetails([
         ...current,
-        createChapterDetail(current.length + 1, '', Math.max(1000, Math.round(targetWords / 12))),
+        createChapterDetail(current.length + 1, '', Math.max(1000, Math.round(targetWords / 15))),
       ])
     );
   };

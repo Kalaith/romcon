@@ -56,8 +56,8 @@ final class JwtAuthMiddleware implements MiddlewareInterface
             'auth_type' => (string) ($claims->auth_type ?? 'local'),
         ];
 
-        if (!$isGuest && ctype_digit($userId)) {
-            $dbUser = User::find((int) $userId);
+        if (!$isGuest) {
+            $dbUser = $this->resolveUserFromClaims($claims, $userPayload);
             if ($dbUser === null) {
                 return $this->jsonError('User not found', 401);
             }
@@ -69,8 +69,9 @@ final class JwtAuthMiddleware implements MiddlewareInterface
                 'display_name' => (string) $dbUser->display_name,
                 'role' => (string) $dbUser->role,
                 'is_guest' => false,
-                'auth_type' => 'local',
+                'auth_type' => (string) ($claims->auth_type ?? 'local'),
             ];
+            $userId = (string) $dbUser->id;
         }
 
         $request = $request
@@ -78,6 +79,86 @@ final class JwtAuthMiddleware implements MiddlewareInterface
             ->withAttribute('user', $userPayload);
 
         return $handler->handle($request);
+    }
+
+    private function resolveUserFromClaims(object $claims, array $userPayload): ?User
+    {
+        $userId = (string) ($claims->user_id ?? $claims->sub ?? '');
+        $email = trim((string) ($claims->email ?? ''));
+        $username = trim((string) ($claims->username ?? ''));
+        $displayName = trim((string) ($claims->display_name ?? ''));
+        $role = trim((string) ($claims->role ?? 'user')) ?: 'user';
+
+        if ($userId !== '' && ctype_digit($userId)) {
+            $dbUser = User::find((int) $userId);
+            if ($dbUser !== null) {
+                return $dbUser;
+            }
+        }
+
+        $dbUser = null;
+        if ($userId !== '') {
+            $dbUser = User::where('webhatch_id', $userId)->first();
+        }
+
+        if ($dbUser === null && $email !== '') {
+            $dbUser = User::where('email', $email)->first();
+        }
+
+        if ($dbUser === null && $username !== '') {
+            $dbUser = User::where('username', $username)->first();
+        }
+
+        $now = date('Y-m-d H:i:s');
+
+        if ($dbUser === null) {
+            if ($userId === '' || $email === '' || $username === '') {
+                return null;
+            }
+
+            return User::create([
+                'webhatch_id' => $userId,
+                'email' => $email,
+                'username' => $username,
+                'display_name' => $displayName !== '' ? $displayName : $username,
+                'role' => $role,
+                'is_verified' => true,
+                'password_hash' => password_hash(bin2hex(random_bytes(24)), PASSWORD_DEFAULT),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $dirty = false;
+
+        if ($userId !== '' && (string) $dbUser->webhatch_id !== $userId) {
+            $dbUser->webhatch_id = $userId;
+            $dirty = true;
+        }
+        if ($email !== '' && (string) $dbUser->email !== $email) {
+            $dbUser->email = $email;
+            $dirty = true;
+        }
+        if ($username !== '' && (string) $dbUser->username !== $username) {
+            $dbUser->username = $username;
+            $dirty = true;
+        }
+        $nextDisplayName = $displayName !== '' ? $displayName : $username;
+        if ($nextDisplayName !== '' && (string) $dbUser->display_name !== $nextDisplayName) {
+            $dbUser->display_name = $nextDisplayName;
+            $dirty = true;
+        }
+        if ((string) $dbUser->role !== $role) {
+            $dbUser->role = $role;
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $dbUser->updated_at = $now;
+            $dbUser->save();
+        }
+
+        return $dbUser;
     }
 
     private function jsonError(string $message, int $status): Response

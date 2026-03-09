@@ -1,3 +1,5 @@
+import { getHeatLevelMeta } from '../../../constants/heatLevels';
+
 type SummaryHeroProps = {
   title: string;
   setting: string;
@@ -23,13 +25,14 @@ export function SummaryHero({
   onBackToPlanner,
   onExport,
 }: SummaryHeroProps) {
+  const heatLevelMeta = getHeatLevelMeta(heatLevel);
   const chips = [
     ['Setting', setting || 'Not set'],
     ['Main Romance', romanceConfiguration || 'Not set'],
     ['POV Mode', povMode || 'Not set'],
     ['Main Focus', mainCharacterFocus || 'Not set'],
     ['Selected Trope', selectedTrope || 'Not selected'],
-    ['Heat Level', heatLevel],
+    ['Heat Level', `${heatLevelMeta.label}: ${heatLevelMeta.description}`],
     ['Target Words', targetWords.toLocaleString()],
   ];
 

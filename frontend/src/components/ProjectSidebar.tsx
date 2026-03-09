@@ -1,4 +1,5 @@
 import type { Plan } from '../types';
+import { getHeatLevelMeta } from '../constants/heatLevels';
 
 type ProjectSidebarProps = {
   projects: Plan[];
@@ -26,7 +27,7 @@ export function ProjectSidebar({ projects, currentPlanId, onOpen, onDelete, onNe
           <div key={project.id} className={`rounded-2xl border p-4 ${project.id === currentPlanId ? 'border-rose-500 bg-rose-50' : 'border-rose-100 bg-white/80'}`}>
             <button className="w-full text-left" onClick={() => onOpen(project)}>
               <p className="font-semibold text-rose-950">{project.title}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-rose-500">{project.heat_level} | {project.target_words.toLocaleString()} words</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.2em] text-rose-500">{getHeatLevelMeta(project.heat_level).label} | {project.target_words.toLocaleString()} words</p>
               {project.setting ? <p className="mt-2 text-sm text-rose-900/70">{project.setting}</p> : null}
             </button>
             {project.id ? (

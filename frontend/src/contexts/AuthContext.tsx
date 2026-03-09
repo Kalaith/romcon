@@ -53,10 +53,12 @@ interface AuthContextType {
   user: User | null;
   error: string | null;
   authMode: AuthMode;
+  canLinkGuestToFrontpage: boolean;
   refreshUserInfo: () => Promise<void>;
   loginWithRedirect: () => void;
   continueAsGuest: () => Promise<void>;
   getLinkAccountUrl: () => string;
+  linkGuestToFrontpage: () => Promise<void>;
   logout: () => void;
   getAccessToken: () => Promise<string>;
 }
@@ -71,10 +73,12 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   error: null,
   authMode: null,
+  canLinkGuestToFrontpage: false,
   refreshUserInfo: async () => undefined,
   loginWithRedirect: () => undefined,
   continueAsGuest: async () => undefined,
   getLinkAccountUrl: () => '/signup',
+  linkGuestToFrontpage: async () => undefined,
   logout: () => undefined,
   getAccessToken: async () => {
     throw new Error('Not authenticated');
@@ -276,6 +280,60 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return baseUrl;
   }, [user]);
+
+  const linkGuestToFrontpage = useCallback(async (): Promise<void> => {
+    const guestSession = readGuestSession();
+    const frontpageToken = readFrontpageToken();
+    const frontpageUser = readFrontpageUser();
+
+    if (!guestSession?.user?.id || !guestSession.user.is_guest) {
+      throw new Error('No guest session is available to link.');
+    }
+
+    if (!frontpageToken) {
+      throw new Error('No WebHatchery session is available to link.');
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(buildApiUrl('/auth/link-guest'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${frontpageToken}`,
+        },
+        body: JSON.stringify({ guest_user_id: guestSession.user.id }),
+      });
+
+      const raw = await response.text();
+      const result = raw ? (JSON.parse(raw) as AuthApiResponse<LinkGuestPayload>) : null;
+      if (!response.ok || !result?.success || !result.data) {
+        throw new Error(result?.message || result?.error || `Failed to link guest data (${response.status})`);
+      }
+
+      clearGuestSession();
+      savePreferredAuthMode('frontpage');
+      setToken(frontpageToken);
+      setAuthMode('frontpage');
+      setUser({
+        id: String(frontpageUser?.id ?? ''),
+        email: frontpageUser?.email ?? '',
+        display_name: frontpageUser?.display_name || frontpageUser?.username || 'WebHatchery User',
+        username: frontpageUser?.username ?? '',
+        role: frontpageUser?.role ?? 'user',
+        is_verified: true,
+        is_guest: false,
+        auth_type: 'frontpage',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to link guest account data');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const continueAsGuest = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -496,14 +554,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       user,
       error,
       authMode,
+      canLinkGuestToFrontpage: Boolean(import.meta.env.PROD && user?.is_guest && readFrontpageToken()),
       refreshUserInfo,
       loginWithRedirect,
       continueAsGuest,
       getLinkAccountUrl,
+      linkGuestToFrontpage,
       logout,
       getAccessToken,
     }),
-    [authMode, continueAsGuest, error, getAccessToken, getLinkAccountUrl, isLoading, loginWithRedirect, logout, refreshUserInfo, token, user]
+    [authMode, continueAsGuest, error, getAccessToken, getLinkAccountUrl, isLoading, linkGuestToFrontpage, loginWithRedirect, logout, refreshUserInfo, token, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

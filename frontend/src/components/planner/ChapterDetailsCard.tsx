@@ -58,7 +58,7 @@ export function ChapterDetailsCard({
       onSave={() => void saveEditing()}
     >
       <div className="mb-5 flex flex-wrap gap-3">
-        <button className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60" disabled={isGenerating} onClick={onGenerate} type="button">
+        <button className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" disabled={isGenerating} onClick={onGenerate} type="button">
           {isGenerating ? 'Generating chapter plan...' : generateButtonLabel}
         </button>
         <button className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800" onClick={startEditing} type="button">
@@ -105,7 +105,7 @@ export function ChapterDetailsCard({
         <div className="mt-5 rounded-[1.5rem] border border-dashed border-rose-200 bg-white/60 p-5">
           <p className="text-sm text-rose-800/70">No chapter planning saved yet.</p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <button className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white" onClick={startFromPremise} type="button">
+            <button className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800" onClick={startFromPremise} type="button">
               Build From Premise Beats
             </button>
             <button className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800" onClick={startBlankPlan} type="button">

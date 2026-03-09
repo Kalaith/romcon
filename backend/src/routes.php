@@ -69,6 +69,9 @@ return function (App $app) {
     })->add(new JwtAuthMiddleware());
 
     $app->group('/generate', function (RouteCollectorProxy $generate) {
+        $generate->post('/concept', [GeneratorController::class, 'concept']);
+        $generate->post('/concept-expand', [GeneratorController::class, 'expandConcept']);
+        $generate->post('/concept-polish', [GeneratorController::class, 'polishConcept']);
         $generate->post('/character-pack', [GeneratorController::class, 'characterPack']);
         $generate->post('/cast', [GeneratorController::class, 'cast']);
         $generate->post('/cast-member', [GeneratorController::class, 'castMember']);

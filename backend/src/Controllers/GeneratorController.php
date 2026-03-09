@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Actions\GenerateCharacterPackAction;
+use App\Actions\GenerateConceptAction;
 use App\Actions\GenerateChapterDetailsAction;
 use App\Actions\GenerateCastAction;
 use App\Actions\GenerateCastMemberAction;
 use App\Actions\GeneratePairingAction;
 use App\Actions\GeneratePremiseAction;
+use App\Actions\ExpandConceptAction;
+use App\Actions\PolishConceptAction;
 use App\Models\Plan;
 use App\Services\CharacterLibrarySyncService;
+use App\Services\HeatLevelPolicy;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -20,7 +24,7 @@ final class GeneratorController extends BaseController
     public function characterPack(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GenerateCharacterPackAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
             $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), $payload, [
@@ -37,10 +41,52 @@ final class GeneratorController extends BaseController
         }
     }
 
+    public function concept(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new GenerateConceptAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+            $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), array_merge($payload, $result), []);
+
+            return $this->success($response, $plan->toApiArray());
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
+    public function polishConcept(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new PolishConceptAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+            $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), array_merge($payload, $result), []);
+
+            return $this->success($response, $plan->toApiArray());
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
+    public function expandConcept(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new ExpandConceptAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+            $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), array_merge($payload, $result), []);
+
+            return $this->success($response, $plan->toApiArray());
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
     public function pairing(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GeneratePairingAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
             $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), $payload, [
@@ -57,7 +103,7 @@ final class GeneratorController extends BaseController
     public function premise(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GeneratePremiseAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
             $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), $payload, [
@@ -73,7 +119,7 @@ final class GeneratorController extends BaseController
     public function cast(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GenerateCastAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
             $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), $payload, [
@@ -89,7 +135,7 @@ final class GeneratorController extends BaseController
     public function chapterDetails(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GenerateChapterDetailsAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
             $plan = $this->saveGeneratedResult((string) $request->getAttribute('user_id'), $payload, [
@@ -105,7 +151,7 @@ final class GeneratorController extends BaseController
     public function castMember(Request $request, Response $response): Response
     {
         try {
-            $payload = $this->getRequestData($request);
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GenerateCastMemberAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
 
@@ -143,7 +189,7 @@ final class GeneratorController extends BaseController
         $plan->emotional_question = isset($payload['emotional_question']) ? (string) $payload['emotional_question'] : $plan->emotional_question;
         $plan->flavor_seeds_json = json_encode($payload['flavor_seeds'] ?? json_decode((string) ($plan->flavor_seeds_json ?? '[]'), true) ?? []);
         $plan->heat_level = trim((string) ($payload['heat_level'] ?? $plan->heat_level ?? 'sweet'));
-        $plan->target_words = max(10000, (int) ($payload['target_words'] ?? $plan->target_words ?? 30000));
+        $plan->target_words = max(10000, (int) ($payload['target_words'] ?? $plan->target_words ?? 45000));
         $plan->trope_notes_json = json_encode($payload['trope_notes'] ?? json_decode((string) ($plan->trope_notes_json ?? '[]'), true) ?? []);
         $plan->notes = isset($payload['notes']) ? (string) $payload['notes'] : $plan->notes;
 
@@ -193,5 +239,14 @@ final class GeneratorController extends BaseController
         (new CharacterLibrarySyncService())->syncFromGeneratedFields($userId, $generatedFields, $plan);
 
         return $plan;
+    }
+
+    private function normalizeHeatLevelPayload(Request $request, array $payload): array
+    {
+        $user = $request->getAttribute('user');
+        $isGuest = is_array($user) && (($user['is_guest'] ?? false) === true);
+        $payload['heat_level'] = HeatLevelPolicy::normalize((string) ($payload['heat_level'] ?? 'sweet'), $isGuest);
+
+        return $payload;
     }
 }

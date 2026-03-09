@@ -19,11 +19,7 @@ type PlannerState = {
 };
 
 const createEmptyPlan = (): Plan => new Plan();
-const createDefaultPlan = (): Plan => ({
-  ...createEmptyPlan(),
-  concept_brief: 'A buttoned-up wedding planner and a chaotic rescue-dog photographer are forced to save a society wedding after a viral disaster.',
-  setting: 'Contemporary small-city Australia',
-});
+const createDefaultPlan = (): Plan => createEmptyPlan();
 
 const normalizePairing = (pairing?: Partial<PairingResult> | null): PairingResult | null => {
   if (!pairing) {
