@@ -25,6 +25,7 @@ final class GenerateCastMemberAction
         $centralExternalPressure = trim((string) ($input['central_external_pressure'] ?? ''));
         $emotionalQuestion = trim((string) ($input['emotional_question'] ?? ''));
         $flavorSeeds = array_values(array_filter(array_map('strval', $input['flavor_seeds'] ?? [])));
+        $existingCast = is_array($input['cast'] ?? null) ? $input['cast'] : [];
 
         if ($prompt === '') {
             throw new \InvalidArgumentException('prompt is required');
@@ -37,7 +38,7 @@ final class GenerateCastMemberAction
                 'Layer 2: Structured Outline',
                 'Generate one supporting character',
                 $promptBuilder->compactLines(
-                    "Prompt: {$prompt}",
+                    'User cast-member brief (treat as authoritative): ' . $prompt,
                     "Setting: {$setting}",
                     "Core romance configuration: {$romanceConfiguration}",
                     $mainCharacterFocus !== '' ? "Main character focus: {$mainCharacterFocus}" : '',
@@ -50,11 +51,17 @@ final class GenerateCastMemberAction
                     'Lead two: ' . json_encode($leadTwo, JSON_PRETTY_PRINT),
                     'Pairing analysis: ' . json_encode($pairing, JSON_PRETTY_PRINT),
                     'Premise: ' . json_encode($premise, JSON_PRETTY_PRINT),
+                    $existingCast !== [] ? 'Existing supporting cast: ' . json_encode($existingCast, JSON_PRETTY_PRINT) : '',
                     $flavorSeeds !== [] ? 'Flavor sources: ' . implode(', ', $flavorSeeds) : ''
                 ),
                 $promptBuilder->compactLines(
-                    'Make the character useful for a romantic comedy novella.',
-                    'Keep them distinct from the leads.',
+                    'Treat the user cast-member brief as a hard requirement, not a vibe.',
+                    'Preserve the prompt\'s requested archetype, role, tone, and relationship function unless it directly conflicts with safety or the schema.',
+                    'If the prompt specifies concrete traits, use them. Only invent missing details needed to complete the profile.',
+                    'Do not replace a specific prompt idea with a generic romcom stock character.',
+                    'Keep the character distinct from the leads and any existing cast.',
+                    'Make the character useful for this specific romantic comedy novella, not just romantic comedies in general.',
+                    'Let the requested prompt visibly shape the role, summary, connection_to_leads, story_function, and comedic_angle fields.',
                     'Return one character only.',
                     'Return planning detail only, not prose.'
                 )

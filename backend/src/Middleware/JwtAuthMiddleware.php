@@ -89,6 +89,14 @@ final class JwtAuthMiddleware implements MiddlewareInterface
         $displayName = trim((string) ($claims->display_name ?? ''));
         $role = trim((string) ($claims->role ?? 'user')) ?: 'user';
 
+        if ($username === '' && $email !== '') {
+            $username = strstr($email, '@', true) ?: $email;
+        }
+
+        if ($displayName === '') {
+            $displayName = $username !== '' ? $username : $email;
+        }
+
         if ($userId !== '' && ctype_digit($userId)) {
             $dbUser = User::find((int) $userId);
             if ($dbUser !== null) {
@@ -112,15 +120,15 @@ final class JwtAuthMiddleware implements MiddlewareInterface
         $now = date('Y-m-d H:i:s');
 
         if ($dbUser === null) {
-            if ($userId === '' || $email === '' || $username === '') {
+            if ($userId === '' || $email === '') {
                 return null;
             }
 
             return User::create([
                 'webhatch_id' => $userId,
                 'email' => $email,
-                'username' => $username,
-                'display_name' => $displayName !== '' ? $displayName : $username,
+                'username' => $this->buildUniqueUsername($username !== '' ? $username : $email),
+                'display_name' => $displayName !== '' ? $displayName : $email,
                 'role' => $role,
                 'is_verified' => true,
                 'password_hash' => password_hash(bin2hex(random_bytes(24)), PASSWORD_DEFAULT),
@@ -140,10 +148,13 @@ final class JwtAuthMiddleware implements MiddlewareInterface
             $dirty = true;
         }
         if ($username !== '' && (string) $dbUser->username !== $username) {
-            $dbUser->username = $username;
-            $dirty = true;
+            $existingForUsername = User::where('username', $username)->first();
+            if ($existingForUsername === null || (int) $existingForUsername->id === (int) $dbUser->id) {
+                $dbUser->username = $username;
+                $dirty = true;
+            }
         }
-        $nextDisplayName = $displayName !== '' ? $displayName : $username;
+        $nextDisplayName = $displayName !== '' ? $displayName : $email;
         if ($nextDisplayName !== '' && (string) $dbUser->display_name !== $nextDisplayName) {
             $dbUser->display_name = $nextDisplayName;
             $dirty = true;
@@ -159,6 +170,24 @@ final class JwtAuthMiddleware implements MiddlewareInterface
         }
 
         return $dbUser;
+    }
+
+    private function buildUniqueUsername(string $base): string
+    {
+        $normalized = strtolower(trim($base));
+        $normalized = preg_replace('/[^a-z0-9_]+/', '_', $normalized) ?? 'user';
+        $normalized = trim($normalized, '_');
+        $normalized = $normalized !== '' ? $normalized : 'user';
+        $candidate = substr($normalized, 0, 80);
+        $suffix = 1;
+
+        while (User::where('username', $candidate)->exists()) {
+            $suffixText = '_' . $suffix;
+            $candidate = substr($normalized, 0, max(1, 80 - strlen($suffixText))) . $suffixText;
+            $suffix++;
+        }
+
+        return $candidate;
     }
 
     private function jsonError(string $message, int $status): Response

@@ -192,6 +192,7 @@ export const generatorApi = {
     lead_two: CharacterPack | null;
     pairing: PairingResult | null;
     premise: PremiseResult | null;
+    cast: CastMember[];
   }): Promise<CastMember> {
     const response = await api.post('/generate/cast-member', payload);
     return response.data.data as CastMember;

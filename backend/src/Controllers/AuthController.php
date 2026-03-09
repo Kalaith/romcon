@@ -157,27 +157,31 @@ final class AuthController extends BaseController
             return $this->error($response, 'Invalid guest_user_id', 400);
         }
 
+        $this->syncLinkedUserProfile((string) $user['id'], (array) ($payload['frontpage_user'] ?? []));
+
+        $destinationUserId = (string) $user['id'];
+
         $movedPlans = Capsule::table('plans')
             ->where('created_by', $guestUserId)
-            ->update(['created_by' => (string) $user['id']]);
+            ->update(['created_by' => $destinationUserId]);
         $movedFlavorSeeds = Capsule::table('flavor_seeds')
             ->where('created_by', $guestUserId)
-            ->update(['created_by' => (string) $user['id']]);
+            ->update(['created_by' => $destinationUserId]);
         $movedLibraryEntries = Capsule::table('character_library_entries')
             ->where('created_by', $guestUserId)
-            ->update(['created_by' => (string) $user['id']]);
+            ->update(['created_by' => $destinationUserId]);
         $movedWriterProfiles = Capsule::table('writer_profiles')
             ->where('created_by', $guestUserId)
-            ->update(['created_by' => (string) $user['id']]);
+            ->update(['created_by' => $destinationUserId]);
         $movedTropes = Capsule::table('tropes')
             ->where('created_by', $guestUserId)
             ->where('is_global', 0)
-            ->update(['created_by' => (string) $user['id']]);
+            ->update(['created_by' => $destinationUserId]);
         $totalMoved = $movedPlans + $movedFlavorSeeds + $movedLibraryEntries + $movedWriterProfiles + $movedTropes;
 
         return $this->success($response, [
             'guest_user_id' => $guestUserId,
-            'linked_to_user_id' => (string) $user['id'],
+            'linked_to_user_id' => $destinationUserId,
             'moved_rows_by_table' => [
                 'plans' => $movedPlans,
                 'flavor_seeds' => $movedFlavorSeeds,
@@ -187,6 +191,47 @@ final class AuthController extends BaseController
             ],
             'total_moved_rows' => $totalMoved,
         ], 'Guest account linked successfully');
+    }
+
+    private function syncLinkedUserProfile(string $userId, array $frontpageUser): void
+    {
+        $user = User::find((int) $userId);
+        if ($user === null) {
+            return;
+        }
+
+        $email = trim((string) ($frontpageUser['email'] ?? ''));
+        $username = trim((string) ($frontpageUser['username'] ?? ''));
+        $displayName = trim((string) ($frontpageUser['display_name'] ?? ''));
+        $role = trim((string) ($frontpageUser['role'] ?? ''));
+        $webhatchId = trim((string) ($frontpageUser['id'] ?? ''));
+        $dirty = false;
+
+        if ($webhatchId !== '' && (string) $user->webhatch_id !== $webhatchId) {
+            $user->webhatch_id = $webhatchId;
+            $dirty = true;
+        }
+        if ($email !== '' && (string) $user->email !== $email) {
+            $user->email = $email;
+            $dirty = true;
+        }
+        if ($username !== '' && (string) $user->username !== $username) {
+            $user->username = $username;
+            $dirty = true;
+        }
+        if ($displayName !== '' && (string) $user->display_name !== $displayName) {
+            $user->display_name = $displayName;
+            $dirty = true;
+        }
+        if ($role !== '' && (string) $user->role !== $role) {
+            $user->role = $role;
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $user->updated_at = date('Y-m-d H:i:s');
+            $user->save();
+        }
     }
 
     private function createToken(User $user): string

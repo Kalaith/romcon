@@ -589,6 +589,7 @@ export function usePlannerWorkspace() {
           lead_two: currentPlan.lead_two,
           pairing: currentPlan.pairing,
           premise: currentPlan.premise,
+          cast: currentPlan.cast,
         });
       },
       setCastError,

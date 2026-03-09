@@ -1,0 +1,14 @@
+meta {
+  name: current-user
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/auth/current-user
+  body: none
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+}

@@ -17,48 +17,6 @@
 * **Concrete Modern Texture**: Use jobs, routines, group chats, schedules, logistics, money pressure, and reputation as practical story engines.
 * **Contained Scale**: Favor a vivid local ecosystem over sprawling mythology. The story should feel inhabitable and production-ready.
 
----
-
-## Part 2: Project Application for RomCon
-
-### Output Priorities
-* Generate **character packs with internal engines**, not flat descriptors.
-* Build **pairings around friction + fit**, not abstract compatibility scores.
-* Produce **premises that force recurring contact** and escalate emotional stakes.
-* Keep every concept aligned to a **30,000-word novella shape**.
-
-### Character Pack Requirements
-For each lead include:
-* Core desire
-* Core fear
-* Public competence
-* Private mess
-* Everyday strength
-* Comedic weakness
-* Romantic blind spot
-* Secret pressure
-* Social circle role
-* Dialogue rhythm notes
-* Three sample lines of dialogue
-* What they think they want
-* What they actually need
-
-### Pairing Rules
-* One lead's visible strength should reliably aggravate the other lead's hidden weakness.
-* Their practical lives should create friction even when emotional compatibility is high.
-* The pairing should support at least three distinct comedic scene engines.
-* The emotional lesson for each lead must be different.
-* The obstacle should come more from fear, pride, secrecy, and circumstance than cruelty.
-
-### Premise Rules
-* The setup must trap the leads in repeated contact.
-* The external hook should be easy to pitch in one sentence.
-* The story must be supportable at novella length without requiring major subplot sprawl.
-* The midpoint should allow for one sincere, disarming moment that changes the emotional weather.
-* The finale should support a public or high-risk gesture that feels personal rather than generic.
-
----
-
 ## Part 3: Operational Framework
 
 ### Emotional Drivers

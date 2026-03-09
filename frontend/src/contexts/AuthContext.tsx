@@ -47,6 +47,14 @@ interface LinkGuestPayload {
   total_moved_rows: number;
 }
 
+interface LinkGuestRequestProfile {
+  id?: string;
+  email?: string;
+  username?: string;
+  display_name?: string;
+  role?: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -304,7 +312,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           'Content-Type': 'application/json',
           Authorization: `Bearer ${frontpageToken}`,
         },
-        body: JSON.stringify({ guest_user_id: guestSession.user.id }),
+        body: JSON.stringify({
+          guest_user_id: guestSession.user.id,
+          frontpage_user: {
+            id: frontpageUser?.id != null ? String(frontpageUser.id) : undefined,
+            email: frontpageUser?.email,
+            username: frontpageUser?.username,
+            display_name: frontpageUser?.display_name,
+            role: frontpageUser?.role,
+          } satisfies LinkGuestRequestProfile,
+        }),
       });
 
       const raw = await response.text();
@@ -529,7 +546,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ guest_user_id: guestUserId }),
+          body: JSON.stringify({
+            guest_user_id: guestUserId,
+            frontpage_user: {
+              id: readFrontpageUser()?.id != null ? String(readFrontpageUser()?.id) : undefined,
+              email: readFrontpageUser()?.email,
+              username: readFrontpageUser()?.username,
+              display_name: readFrontpageUser()?.display_name,
+              role: readFrontpageUser()?.role,
+            } satisfies LinkGuestRequestProfile,
+          }),
         });
 
         const raw = await response.text();
