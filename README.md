@@ -1,194 +1,172 @@
 # RomCon
 
-RomCon is a romantic comedy novella planning app for building the setup layer of a book before drafting begins. It is designed for short, high-chemistry romance projects where the core value comes from strong leads, built-in tension, and a premise that can carry a clean 30,000-word arc without collapsing into subplot sprawl.
+RomCon is a romantic-comedy novella planner and draft studio. It builds a structured story package first, then lets the user draft chapters from that package inside the app.
 
-The app is intentionally focused on planning rather than manuscript writing. It helps the user generate and refine the romantic engine of a story: who the leads are, why they clash, why they secretly fit, what trope frame suits them best, and what premise can keep them in orbit long enough to make the relationship feel earned.
+The product is designed around one principle: planning and drafting should stay connected, but they should not be the same step.
 
-## What The App Builds
+## Current Product Shape
 
-RomCon currently supports four main planning outputs:
+RomCon now ships with five connected workspaces:
 
-* **Detailed lead character packs**
-  Each lead is generated with internal story machinery rather than a flat descriptor list. The pack covers desire, fear, competence, emotional weakness, romantic blind spot, pressure points, social role, and dialogue texture.
+1. `Story Planner`
+   Build the story in stages: `Concept`, `Leads`, `Pairing`, `Cast`, `Premise`, `Chapters`, `Save`.
+2. `Cast Library`
+   Store reusable supporting characters and inject them back into active plans.
+3. `Draft Studio`
+   Draft or regenerate individual chapters from the current plan, cast, chapter details, and writer profile, then compile a manuscript view.
+4. `Writer Profile`
+   Edit the effective writing voice used during generation.
+5. `Story Summary`
+   Review and export the assembled plan package.
 
-* **Pairing analysis**
-  Once both leads exist, the app evaluates the match as a romcom pairing rather than a compatibility chart. It focuses on friction, fit, emotional lessons, scene engines, and trope suitability.
+## Planner Flow
 
-* **Premise generation**
-  After the pairing is defined, the app produces a novella-scale setup with a logline, forced-proximity device, central obstacle, midpoint turn, finale payoff, and chapter-beat direction.
+The main workflow is:
 
-* **Trope table support**
-  The app includes a built-in trope reference layer so the user can bias generation toward specific romantic comedy structures such as fake dating, enemies to lovers, forced proximity, second chance, or accidental partnership.
+1. Build the concept frame.
+2. Generate the two leads.
+3. Generate the pairing logic.
+4. Add supporting cast pressure.
+5. Build the premise.
+6. Generate chapter details.
+7. Save and review the story package.
 
-## Core Product Direction
+The planner is intentionally stage-driven. Each stage has a focused workspace, one dominant action, and sticky workflow controls.
 
-The MVP is built around a specific planning philosophy:
+## Draft Flow
 
-* Romance works best when the leads are designed as emotional systems, not just aesthetic concepts.
-* Good pairings are driven by productive friction, not abstract compatibility.
-* A strong premise should naturally force repeated contact and escalating vulnerability.
-* A novella needs a clean, efficient engine. One couple, one primary hook, one emotional arc per lead, and one obstacle that can break them if handled badly.
+Drafting is separate from planning, but it is not disconnected from it.
 
-That means RomCon is not trying to be a general writing suite. It is much narrower than that. It exists to generate the pressure cooker and make sure the central couple can actually carry the story.
+Draft Studio works like this:
 
-## Writer Profile Implementation
+1. Generate chapter details in the planner.
+2. Open `Draft Studio`.
+3. Select a chapter.
+4. Generate or regenerate that chapter from the current plan state.
+5. Revise the chapter or save manual edits.
+6. Compile drafted chapters into a manuscript view.
 
-The original project notes included a writer profile that was tuned much more heavily toward survival fiction, bodily transformation, and darker speculative storytelling. That did not match the romantic comedy goal, so the current implementation replaces that direction with a dedicated romcom-specific profile in [writer_profile.md](H:\WebHatchery\apps\romcon\writer_profile.md).
+Any regenerated chapter uses the latest version of the plan, including cast, premise, chapter details, and writer profile.
 
-The rewritten profile does several important things:
+## Writer Voice
 
-* defines the target voice as emotionally close, warm, clever, and contemporary
-* prioritizes chemistry through contrast rather than generic "perfect match" alignment
-* frames world-building in social and logistical terms such as weddings, work, community, housing, family, and reputation
-* gives explicit guardrails for pacing, emotional exposure, dialogue rhythm, and tonal balance
-* keeps the generation aligned to novella scale instead of drifting into a larger, messier book shape
+The built-in writer voice is no longer sourced from a loose root-level markdown file.
 
-This profile is part of the implementation, not just a note. The generator uses it as the creative operating manual for Gemini output.
+It now lives in:
 
-## Current User Flow
+`backend/src/Prompts/writer_profile.json`
 
-The app is built around a simple planning loop:
+The backend loads it through the shared prompt-definition loader, the same way other generator prompt definitions are loaded. Users can still override that default per account through the Writer Profile workspace.
 
-1. Enter or refine a concept brief.
-2. Generate two lead character packs.
-3. Select or bias toward a trope.
-4. Evaluate the pairing.
-5. Generate a premise and chapter-shape planning beats.
-6. Save the plan for later revision.
+## Prompt System
 
-This flow is deliberate. The app does not start from trope alone, and it does not jump straight to a premise before the couple is doing real work. Character leads first, pairing second, premise third.
+Generator prompt definitions are stored in:
 
-## Authentication And Project Ownership
+`backend/src/Prompts/`
 
-RomCon supports both full accounts and guest sessions.
+The backend loads them through:
 
-Guest access exists so a user can begin exploring ideas immediately without being blocked by sign-up. A guest can generate character packs, pairing analysis, premises, and save plans under a guest identity. If that user later creates or logs into a real account, the guest project data can be linked forward so the planning work is not lost.
+`backend/src/Services/PromptDefinitionLoader.php`
 
-This matters for the intended product feel. RomCon is meant to be fast to enter and forgiving to experiment with. The auth flow supports that by letting casual use happen first and account commitment happen later.
+This keeps prompt text out of the action classes and makes production prompt loading more reliable.
 
-## Project Saving
+## Backend Overview
 
-Saved projects are novella planning boards, not full manuscripts. Each project can currently store:
+The backend is a Slim-based API responsible for:
 
-* title
-* heat level
-* target word count
-* summary
-* lead one
-* lead two
-* pairing analysis
-* premise output
-* trope notes
-* freeform notes
+- authentication and guest sessions
+- plan persistence
+- cast library persistence
+- writer profile persistence
+- trope and flavor seed management
+- generation endpoints for concept, leads, pairing, cast, premise, chapter details, and chapter drafts
+- export packaging
 
-This structure keeps the app centered on pre-draft planning. The user is not storing scenes, chapters, or prose drafts as primary entities in the current MVP.
+Important backend paths:
 
-## Frontend Implementation
+- `backend/src/Actions/`
+- `backend/src/Controllers/`
+- `backend/src/Models/`
+- `backend/src/Prompts/`
+- `backend/src/Services/`
+- `backend/database/schema.sql`
+- `backend/public/index.php`
 
-The frontend is built as a focused planner rather than a multi-tool dashboard.
+## Frontend Overview
 
-The main experience is a single workspace with:
+The frontend is a React + TypeScript + Vite app.
 
-* an auth entry panel for login, registration, or guest access
-* a project sidebar for saved plans
-* a trope table for selection and reference
-* a planning form for concept, heat level, setting, and target words
-* dedicated display areas for lead packs, pairing logic, premise output, and notes
+Important frontend paths:
 
-The visual direction is intentionally more romantic and editorial than generic app UI. The interface uses a softer palette, large serif headlines, glass-style panels, and a layout that treats the plan as a curated creative board instead of a spreadsheet.
+- `frontend/src/components/`
+- `frontend/src/hooks/`
+- `frontend/src/stores/`
+- `frontend/src/api/`
+- `frontend/src/types/`
 
-The frontend does not attempt to do too much at once. It is designed so the user can move through the planning sequence in a clear order without getting buried under controls.
+The main planner shell lives in:
 
-## Backend Implementation
+- `frontend/src/components/PlannerWorkspace.tsx`
+- `frontend/src/components/planner/StoryPlannerView.tsx`
 
-The backend supports the planning loop with a compact set of responsibilities:
+## Data Shape
 
-* user registration and login
-* guest session creation
-* guest-to-account linking
-* plan create/read/update/delete
-* trope catalog delivery
-* Gemini-backed generation endpoints for:
-  * character packs
-  * pairing analysis
-  * premise generation
+Plans now include more than early MVP story setup. A saved plan can include:
 
-The backend stores plans as structured planning records rather than trying to normalize every possible writing concept into a huge schema. That is a deliberate implementation choice for MVP speed and simplicity.
+- concept and setup fields
+- two leads
+- pairing result
+- active cast
+- premise result
+- chapter details
+- drafted chapters
+- notes
+- effective writer profile in export payloads
 
-The generation layer is prompt-shaped around the romcom writer profile, so the app is not just calling a model with thin raw prompts. It is trying to keep the output aesthetically and structurally aligned to the product's purpose.
+## Local Development
 
-## Database Shape
+### Frontend
 
-The current database footprint is intentionally small.
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-There are two main persisted concepts:
+### Backend
 
-* **users**
-  For registered account ownership
+```powershell
+cd backend
+composer install
+php -S localhost:8000 -t public
+```
 
-* **plans**
-  For stored novella planning records, including serialized generation outputs
+Environment files already exist for local and deployment-specific setups under `backend/` and `frontend/`.
 
-Database initialization is SQL-only. The schema lives in [schema.sql](H:\WebHatchery\apps\romcon\backend\database\schema.sql). Future database changes for this app should follow the same approach and stay in `.sql` files rather than being hidden inside a PHP init script.
+## Deployment Notes
 
-## Gemini Usage
+`publish.ps1` is kept as repo tooling for deployment. It is operational tooling, not application code.
 
-Gemini is used as the generation engine in the same general spirit as the `rambler` project, but the shape of the prompts is very different here.
+Generated build output such as `frontend/dist/` should not be treated as source of truth.
 
-RomCon generation is structured around:
+## Repository Cleanup
 
-* romantic comedy tone control
-* novella-size pacing
-* opposition-driven chemistry
-* clean forced-proximity hooks
-* useful JSON outputs that can be stored and edited
+This repo has been cleaned to remove non-product artifacts such as:
 
-The implementation goal is not "write a whole book." It is "generate planning assets that are strong enough to help a human writer make good decisions quickly."
-
-## What MVP Includes
-
-The current MVP includes:
-
-* romcom-specific creative profile
-* account and guest access
-* saved planning projects
-* two-lead character generation
-* pairing analysis
-* premise generation
-* trope browsing and selection
-* note-taking inside a saved plan
-
-## What MVP Does Not Include
-
-The current implementation does not yet try to solve:
-
-* full drafting or manuscript editing
-* scene card systems
-* dialogue generation workbenches
-* chapter management as first-class records
-* collaboration features
-* publishing pipelines
-* advanced analytics
-* broad multi-genre support
-
-Those are intentionally excluded so the first version stays coherent. The core question for MVP is whether the app can consistently help users produce stronger romcom setups faster.
-
-## Folder Overview
-
-* `frontend/`
-  The user-facing planning workspace.
-
-* `backend/`
-  The API, plan persistence layer, auth flow, and Gemini-backed generation logic.
-
-* `writer_profile.md`
-  The romcom creative operating manual used by the generation system.
-
-* `design.md`
-  Early product thinking and generation goals that informed the MVP implementation.
+- sample chapter output
+- exported sample JSON files
+- old root-level writer profile source
+- stale design notes
+- Bruno API collection files
+- generated frontend build output and TypeScript build info files
 
 ## Summary
 
-RomCon is currently implemented as a romantic comedy setup engine. It is not trying to replace the writer. It is trying to make the most failure-prone early decisions easier: choosing better leads, building more productive romantic tension, matching the right trope frame, and landing on a premise that can actually sustain a breezy novella.
+RomCon is no longer just a lead-and-premise generator. It is now a structured romcom planning system with a connected chapter drafting layer.
 
-That narrowness is the point. The app is meant to help the user get to a sharper, more marketable romantic comedy plan with less wandering and less generic output.
+The core contract is:
+
+- build a stronger story package
+- keep supporting cast active in the story engine
+- draft from the package inside the app
+- preserve a clear separation between planning and prose generation
