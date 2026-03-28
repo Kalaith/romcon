@@ -10,8 +10,10 @@ final class WriterProfileResolver
 {
     public function getDefaultProfile(): string
     {
-        $profilePath = realpath(__DIR__ . '/../../writer_profile.md') ?: __DIR__ . '/../../writer_profile.md';
-        return file_exists($profilePath) ? (string) file_get_contents($profilePath) : '';
+        $definition = (new PromptDefinitionLoader())->load('writer_profile');
+        $profile = trim((string) ($definition['profile_markdown'] ?? ''));
+
+        return $profile;
     }
 
     public function getCustomProfile(string $userId): ?string

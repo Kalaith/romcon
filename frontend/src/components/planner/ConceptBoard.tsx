@@ -12,7 +12,6 @@ type ConceptBoardProps = {
   activeGeneration: 'concept' | 'concept_expand' | 'concept_polish' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | 'cast_member' | 'chapter_draft' | null;
   message: string | null;
   error: string | null;
-  conceptButtonLabel: string;
   conceptExpandButtonLabel: string;
   overwriteHint?: string | null;
   isGuestUser: boolean;
@@ -24,7 +23,6 @@ type ConceptBoardProps = {
   onDeleteFlavorSeed: (seedId: number, label: string) => void;
   onCreateTrope: (payload: { name: string; clash_engine: string; best_for: string; is_global: boolean }) => void;
   onDeleteTrope: (tropeId: number) => void;
-  onGenerateConcept: () => void;
   onExpandConcept: () => void;
 };
 
@@ -37,14 +35,14 @@ type ConceptSectionProps = {
 
 function ConceptSection({ title, summary, defaultOpen = false, children }: ConceptSectionProps) {
   return (
-    <details className="rounded-[1.5rem] border border-rose-200 bg-white/70 p-5" open={defaultOpen}>
+    <details className="rounded-[1.5rem] border border-stone-200 bg-stone-50/65 p-5" open={defaultOpen}>
       <summary className="cursor-pointer list-none">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">{title}</p>
-            <p className="mt-2 text-sm text-rose-900/75">{summary}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">{title}</p>
+            <p className="mt-2 text-sm text-stone-700">{summary}</p>
           </div>
-          <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">Open</span>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Open</span>
         </div>
       </summary>
       <div className="mt-5">{children}</div>
@@ -60,7 +58,6 @@ export function ConceptBoard({
   activeGeneration,
   message,
   error,
-  conceptButtonLabel,
   conceptExpandButtonLabel,
   overwriteHint,
   isGuestUser,
@@ -72,14 +69,12 @@ export function ConceptBoard({
   onDeleteFlavorSeed,
   onCreateTrope,
   onDeleteTrope,
-  onGenerateConcept,
   onExpandConcept,
 }: ConceptBoardProps) {
   const allowedHeatLevels = getAllowedHeatLevels(isGuestUser);
   const selectedHeatLevel = getHeatLevelMeta(currentPlan.heat_level);
   const selectedTrope = currentPlan.trope_notes[0] || '';
   const quickTropes = tropes.slice(0, 8);
-  const isGeneratingConcept = activeGeneration === 'concept';
   const isExpandingConcept = activeGeneration === 'concept_expand';
 
   const toggleFlavorSeed = (label: string) => {
@@ -91,7 +86,7 @@ export function ConceptBoard({
   };
 
   return (
-    <section className="glass-panel rounded-[2rem] p-6">
+    <section className="space-y-4">
       <div className="space-y-4">
         <ConceptSection
           title="Core Setup"
@@ -102,7 +97,7 @@ export function ConceptBoard({
             <label className="block">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Plan title</span>
               <input
-                className="w-full rounded-2xl border border-rose-200 bg-white px-4 py-3"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 value={currentPlan.title}
                 onChange={(event) => onFieldChange('title', event.target.value)}
                 placeholder="Leave blank and let Generate Concept name the project"
@@ -111,7 +106,7 @@ export function ConceptBoard({
             <label className="block">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Heat level</span>
               <select
-                className="w-full rounded-2xl border border-rose-200 bg-white px-4 py-3"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 value={currentPlan.heat_level}
                 onChange={(event) => onFieldChange('heat_level', event.target.value)}
               >
@@ -121,14 +116,14 @@ export function ConceptBoard({
                   </option>
                 ))}
               </select>
-              <span className="mt-2 block text-xs text-rose-900/65">{selectedHeatLevel.description}</span>
-              {isGuestUser ? <span className="mt-1 block text-xs text-rose-900/55">Guest accounts can use Chaste, Sweet, or Warm. Link an account to unlock Steamy and above.</span> : null}
+              <span className="mt-2 block text-xs text-stone-600">{selectedHeatLevel.description}</span>
+              {isGuestUser ? <span className="mt-1 block text-xs text-stone-500">Guest accounts can use Chaste, Sweet, or Warm. Link an account to unlock Steamy and above.</span> : null}
             </label>
           </div>
           <label className="mt-4 block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Concept brief</span>
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Concept brief</span>
             <textarea
-              className="min-h-28 w-full rounded-[1.5rem] border border-rose-200 bg-white px-4 py-3"
+              className="min-h-28 w-full rounded-[1.5rem] border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
               value={currentPlan.concept_brief}
               onChange={(event) => onFieldChange('concept_brief', event.target.value)}
               placeholder="Optional seed idea for Generate Concept, or edit the generated concept brief here."
@@ -138,7 +133,7 @@ export function ConceptBoard({
             <label className="block">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Setting</span>
               <input
-                className="w-full rounded-2xl border border-rose-200 bg-white px-4 py-3"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 value={currentPlan.setting}
                 onChange={(event) => onFieldChange('setting', event.target.value)}
                 placeholder="Optional setting seed"
@@ -147,24 +142,21 @@ export function ConceptBoard({
             <label className="block">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Target words</span>
               <input
-                className="w-full rounded-2xl border border-rose-200 bg-white px-4 py-3"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-stone-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 type="number"
                 value={currentPlan.target_words}
                 onChange={(event) => onFieldChange('target_words', Number(event.target.value))}
               />
-              <span className="mt-2 block text-xs text-rose-900/65">Default is 45,000 so the planner can map 15 chapters at about 3,000 words each, while actual drafted chapters can still land closer to 2,000.</span>
+              <span className="mt-2 block text-xs text-stone-600">Default is 45,000 so the planner can map 15 chapters at about 3,000 words each, while actual drafted chapters can still land closer to 2,000.</span>
             </label>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
-            <button className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={onGenerateConcept} disabled={isGenerating}>
-              {isGeneratingConcept ? 'Generating...' : conceptButtonLabel}
-            </button>
             <button className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={onExpandConcept} disabled={isGenerating}>
               {isExpandingConcept ? 'Expanding...' : conceptExpandButtonLabel}
             </button>
           </div>
-          <p className="mt-3 text-sm text-rose-900/70">
-            `Generate Concept` creates a fresh concept board from scratch, including title and heat fit. `Expand Concept` keeps the current idea and builds it out without replacing the core direction.
+          <p className="mt-3 text-sm text-stone-600">
+            `Generate Concept` is the main action for this step. `Expand Concept` keeps the current idea and builds it out without replacing the core direction.
           </p>
         </ConceptSection>
 
@@ -173,17 +165,17 @@ export function ConceptBoard({
           summary={`${currentPlan.romance_configuration || 'Romance not set'}${currentPlan.trope_notes[0] ? ` | ${currentPlan.trope_notes[0]}` : ''}${currentPlan.dominant_romance_arc ? ` | ${currentPlan.dominant_romance_arc}` : ''}`}
           defaultOpen={!selectedTrope}
         >
-          <div className="mb-4 rounded-[1.5rem] border border-rose-200 bg-rose-50/70 p-5">
+          <div className="mb-4 rounded-[1.5rem] border border-stone-200 bg-white p-5">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Trope Direction</p>
-                <p className="mt-2 text-sm text-rose-900/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Trope Direction</p>
+                <p className="mt-2 text-sm text-stone-700">
                   Pick a trope now, or skip it and fill the romance fields directly.
                 </p>
               </div>
               {selectedTrope ? (
                 <button
-                  className="rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-800"
+                  className="rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-rose-800"
                   onClick={() => onFieldChange('trope_notes', [])}
                   type="button"
                 >
@@ -208,12 +200,12 @@ export function ConceptBoard({
               })}
             </div>
 
-            <details className="mt-4 rounded-[1.25rem] border border-rose-200 bg-white p-4">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-rose-900">
+            <details className="mt-4 rounded-[1.25rem] border border-stone-200 bg-stone-50 p-4">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-stone-900">
                 {selectedTrope ? `Why this helps and browse more tropes` : 'Need help or want to browse all tropes?'}
               </summary>
               <div className="mt-3">
-                <p className="text-sm text-rose-900/75">
+                <p className="text-sm text-stone-600">
                   Selecting a trope sets direction only. It does not overwrite `dominant romance arc`, `central external pressure`, `emotional question`, or `romance structure notes`. Those fields stay editable and independent.
                 </p>
                 <div className="mt-4">
@@ -345,7 +337,7 @@ export function ConceptBoard({
         </ConceptSection>
       </div>
 
-      {overwriteHint ? <p className="mt-3 text-sm text-rose-900/70">{overwriteHint}</p> : null}
+      {overwriteHint ? <p className="mt-3 text-sm text-stone-600">{overwriteHint}</p> : null}
       {message ? <p className="mt-4 text-sm text-rose-700">{message}</p> : null}
       {error ? <p className="mt-2 text-sm text-rose-700">{error}</p> : null}
     </section>

@@ -17,10 +17,10 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
 
   if (!premise) {
     return (
-      <div className="glass-panel rounded-[2rem] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">Premise Blueprint</p>
-        <h2 className="font-display text-2xl">Trap them together</h2>
-        <p className="mt-3 text-sm text-rose-800/70">Your novella hook and chapter beats will land here.</p>
+      <div className="rounded-[2rem] border border-dashed border-stone-300 bg-stone-50 p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Premise Blueprint</p>
+        <h2 className="font-display text-2xl text-stone-950">Trap them together</h2>
+        <p className="mt-3 text-sm text-stone-600">Your novella hook and chapter beats will land here.</p>
       </div>
     );
   }
@@ -123,40 +123,40 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
         </div>
       ) : (
         <>
-          <div className="rounded-[1.5rem] bg-white/80 p-5">
-            <h3 className="font-display text-2xl text-rose-950">{active.logline}</h3>
-            <p className="mt-3 text-sm text-rose-900/80">{active.premise}</p>
+          <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5">
+            <h3 className="font-display text-2xl text-stone-950">{active.logline}</h3>
+            <p className="mt-3 text-sm text-stone-700">{active.premise}</p>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] bg-white/80 p-4 text-sm text-rose-900/80">
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
               <p><strong>POV rule:</strong> {active.pov_rule || 'Not set yet.'}</p>
               <p className="mt-2"><strong>Main romance arc:</strong> {active.dominant_story_lane.main_romance_arc || 'Not set yet.'}</p>
               <p className="mt-2"><strong>External pressure:</strong> {active.dominant_story_lane.central_external_pressure || 'Not set yet.'}</p>
               <p className="mt-2"><strong>Emotional question:</strong> {active.dominant_story_lane.emotional_question || 'Not set yet.'}</p>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4 text-sm text-rose-900/80">
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
               <p><strong>Forced proximity:</strong> {active.forced_proximity_device}</p>
               <p className="mt-2"><strong>Primary obstacle:</strong> {active.primary_obstacle}</p>
               <p className="mt-2"><strong>Midpoint shift:</strong> {active.midpoint_shift}</p>
               <p className="mt-2"><strong>Finale payoff:</strong> {active.finale_payoff}</p>
               <p className="mt-2"><strong>Comedic motif:</strong> {active.recurring_comedic_motif}</p>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Escalation path</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Escalation path</p>
               <PlannerList items={active.relationship_escalation_path} emptyText="No escalation path yet." />
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Scene contract</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Scene contract</p>
               <PlannerList items={active.scene_contract.required_elements} emptyText="No scene contract elements yet." />
-              <p className="mt-3 text-sm text-rose-900/80"><strong>Change rule:</strong> {active.scene_contract.chapter_change_rule || 'Not set yet.'}</p>
+              <p className="mt-3 text-sm text-stone-700"><strong>Change rule:</strong> {active.scene_contract.chapter_change_rule || 'Not set yet.'}</p>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4 md:col-span-2">
-              <p className="text-sm font-semibold text-rose-950">Supporting cast roles</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 md:col-span-2">
+              <p className="text-sm font-semibold text-stone-950">Supporting cast roles</p>
               <PlannerList items={active.supporting_cast_roles} emptyText="No supporting cast notes yet." />
             </div>
           </div>
-          <div className="mt-4 rounded-[1.5rem] bg-white/80 p-4">
-            <p className="text-sm font-semibold text-rose-950">12-chapter frame</p>
+          <div className="mt-4 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+            <p className="text-sm font-semibold text-stone-950">12-chapter frame</p>
             <PlannerList items={active.chapter_beats} emptyText="No chapter beats yet." />
           </div>
         </>

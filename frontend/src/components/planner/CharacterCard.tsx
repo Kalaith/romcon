@@ -18,7 +18,7 @@ export function CharacterCard({ label, character, isSaving = false, onSave }: Ch
 
   if (!character) {
     return (
-      <div className="rounded-[1.5rem] border border-dashed border-rose-200 p-5 text-sm text-rose-800/70">
+      <div className="rounded-[1.5rem] border border-dashed border-stone-300 bg-stone-50 p-5 text-sm text-stone-600">
         {label} will appear here after generation.
       </div>
     );
@@ -84,8 +84,8 @@ export function CharacterCard({ label, character, isSaving = false, onSave }: Ch
         </div>
       ) : (
         <>
-          <p className="text-sm text-rose-900/85">{active.personality_summary}</p>
-          <div className="mt-4 grid gap-2 text-sm text-rose-900/80">
+          <p className="text-sm text-stone-700">{active.personality_summary}</p>
+          <div className="mt-4 grid gap-2 text-sm text-stone-700">
             <p><strong>Core desire:</strong> {active.core_desire}</p>
             <p><strong>Core fear:</strong> {active.core_fear}</p>
             <p><strong>Public competence:</strong> {active.public_competence}</p>

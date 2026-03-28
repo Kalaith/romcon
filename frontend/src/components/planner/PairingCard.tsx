@@ -18,10 +18,10 @@ export function PairingCard({ pairing, isSaving = false, onSave }: PairingCardPr
 
   if (!pairing) {
     return (
-      <div className="glass-panel rounded-[2rem] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">Pairing Rules</p>
-        <h2 className="font-display text-2xl">Why these two idiots work</h2>
-        <p className="mt-3 text-sm text-rose-800/70">Generate pairing analysis after the lead packs are in place.</p>
+      <div className="rounded-[2rem] border border-dashed border-stone-300 bg-stone-50 p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Pairing Rules</p>
+        <h2 className="font-display text-2xl text-stone-950">Why these two idiots work</h2>
+        <p className="mt-3 text-sm text-stone-600">Generate pairing analysis after the lead packs are in place.</p>
       </div>
     );
   }
@@ -124,54 +124,54 @@ export function PairingCard({ pairing, isSaving = false, onSave }: PairingCardPr
         </div>
       ) : (
         <>
-          <p className="text-sm text-rose-900/80">{active.pairing_hook}</p>
+          <p className="text-sm text-stone-700">{active.pairing_hook}</p>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-sm font-semibold text-rose-950">Clash</p>
+              <p className="text-sm font-semibold text-stone-950">Clash</p>
               <PlannerList items={active.why_they_clash} emptyText="No clash notes yet." />
             </div>
             <div>
-              <p className="text-sm font-semibold text-rose-950">Fit</p>
+              <p className="text-sm font-semibold text-stone-950">Fit</p>
               <PlannerList items={active.why_they_fit} emptyText="No fit notes yet." />
             </div>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] bg-white/80 p-4 text-sm text-rose-900/80">
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
               <p><strong>Best trope:</strong> {active.best_trope}</p>
               <p className="mt-2"><strong>Lead one learns:</strong> {active.emotional_lessons.lead_one}</p>
               <p className="mt-2"><strong>Lead two learns:</strong> {active.emotional_lessons.lead_two}</p>
               <p className="mt-2"><strong>POV rule:</strong> {active.pov_rule || 'Not set yet.'}</p>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Scene engines</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Scene engines</p>
               <PlannerList items={active.scene_engines} emptyText="No scene engines yet." />
             </div>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] bg-white/80 p-4 text-sm text-rose-900/80">
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
               <p><strong>Main romance arc:</strong> {active.dominant_story_lane.main_romance_arc || 'Not set yet.'}</p>
               <p className="mt-2"><strong>External pressure:</strong> {active.dominant_story_lane.central_external_pressure || 'Not set yet.'}</p>
               <p className="mt-2"><strong>Emotional question:</strong> {active.dominant_story_lane.emotional_question || 'Not set yet.'}</p>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Escalation path</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Escalation path</p>
               <PlannerList items={active.relationship_escalation_path} emptyText="No escalation path yet." />
             </div>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Trope table</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Trope table</p>
               <div className="mt-3 space-y-2">
                 {active.trope_table.map((entry) => (
-                  <div key={entry.trope} className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-900/80">
+                  <div key={entry.trope} className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700">
                     <p className="font-semibold">{entry.trope} ({entry.score}/10)</p>
                     <p>{entry.reason}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="rounded-[1.5rem] bg-white/80 p-4">
-              <p className="text-sm font-semibold text-rose-950">Risk notes</p>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+              <p className="text-sm font-semibold text-stone-950">Risk notes</p>
               <PlannerList items={active.risk_notes} emptyText="No risk notes yet." />
             </div>
           </div>
