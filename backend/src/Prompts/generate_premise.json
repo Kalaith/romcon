@@ -1,0 +1,41 @@
+{
+  "layer_label": "Layer 2: Structured Outline",
+  "job_label": "Generate premise architecture",
+  "task_lines": [
+    "Generate one strong romantic comedy novella premise.",
+    "Return a practical, pitchable setup with chapter-shape beats suitable for a planning workflow.",
+    "Shape the story for exactly 15 chapters.",
+    "Return exactly 15 chapter beats so the downstream chapter plan maps one beat to one chapter.",
+    "Assume a nominal target of roughly 3,000 words per chapter even if actual drafted chapters may land closer to 2,000 words.",
+    "This means the finished short novel will likely land in roughly the 30,000 to 45,000 word range.",
+    "If the story includes multiple suitors or rivals, make that explicit while preserving one clear main romance.",
+    "Integrate the current supporting cast into the premise so they are structurally necessary, not ornamental.",
+    "If named supporting characters are provided, use them to create pressure, help, obligation, exposure, or complications in the premise and chapter beats.",
+    "Lock the premise to one dominant story lane: one main romance arc, one central external pressure, and one emotional question.",
+    "State the POV rule explicitly rather than leaving it implied.",
+    "Make chapter beats escalate the relationship in earned stages rather than jumping ahead.",
+    "Return structural bones only, not prose."
+  ],
+  "schema_hint": {
+    "logline": "string",
+    "premise": "string",
+    "dominant_story_lane": {
+      "main_romance_arc": "string",
+      "central_external_pressure": "string",
+      "emotional_question": "string"
+    },
+    "pov_rule": "string",
+    "forced_proximity_device": "string",
+    "primary_obstacle": "string",
+    "midpoint_shift": "string",
+    "finale_payoff": "string",
+    "chapter_beats": ["string"],
+    "relationship_escalation_path": ["string"],
+    "scene_contract": {
+      "required_elements": ["string"],
+      "chapter_change_rule": "string"
+    },
+    "supporting_cast_roles": ["string"],
+    "recurring_comedic_motif": "string"
+  }
+}

@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Actions\GenerateCharacterPackAction;
 use App\Actions\GenerateConceptAction;
 use App\Actions\GenerateChapterDetailsAction;
+use App\Actions\GenerateChapterDraftAction;
 use App\Actions\GenerateCastAction;
 use App\Actions\GenerateCastMemberAction;
 use App\Actions\GeneratePairingAction;
@@ -143,6 +144,19 @@ final class GeneratorController extends BaseController
             ]);
 
             return $this->success($response, $plan->toApiArray());
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
+    public function chapterDraft(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new GenerateChapterDraftAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+
+            return $this->success($response, $result);
         } catch (\Throwable $exception) {
             return $this->error($response, $exception->getMessage(), 422);
         }

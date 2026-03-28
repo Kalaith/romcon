@@ -1,0 +1,29 @@
+{
+  "layer_label": "Layer 2: Structured Outline",
+  "job_label": "Generate one supporting character",
+  "task_lines": [
+    "Treat the user cast-member brief as a hard requirement, not a vibe.",
+    "Preserve the prompt's requested archetype, role, tone, and relationship function unless it directly conflicts with safety or the schema.",
+    "If the prompt specifies concrete traits, use them. Only invent missing details needed to complete the profile.",
+    "Do not replace a specific prompt idea with a generic romcom stock character.",
+    "Keep the character distinct from the leads and any existing cast.",
+    "Make the character useful for this specific romantic comedy novella, not just romantic comedies in general.",
+    "Make the connection_to_leads and story_function fields explicit about how this person pressures, supports, embarrasses, exposes, or complicates the couple.",
+    "Let the requested prompt visibly shape the role, summary, connection_to_leads, story_function, and comedic_angle fields.",
+    "Return one character only.",
+    "Return planning detail only, not prose."
+  ],
+  "schema_hint": {
+    "name": "string",
+    "role": "string",
+    "summary": "string",
+    "connection_to_leads": "string",
+    "story_function": "string",
+    "core_desire": "string",
+    "core_fear": "string",
+    "secret_pressure": "string",
+    "comedic_angle": "string",
+    "include_in_story": true,
+    "is_main": false
+  }
+}

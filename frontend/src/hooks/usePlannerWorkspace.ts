@@ -9,11 +9,12 @@ import type { WriterProfilePayload } from '../api/writerProfile';
 import { normalizeHeatLevel } from '../constants/heatLevels';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlannerStore } from '../stores/usePlannerStore';
+import { DraftChapter } from '../types';
 import type { CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../types';
 
-export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary';
+export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary' | 'drafts';
 export type PendingRegeneration = 'concept' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | null;
-export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | null;
+export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | 'chapter_draft' | null;
 
 const regenerationModalCopy: Record<Exclude<PendingRegeneration, null>, { title: string; body: string; confirmLabel: string }> = {
   concept: {
@@ -76,6 +77,8 @@ export function usePlannerWorkspace() {
   const [tropeError, setTropeError] = useState<string | null>(null);
   const [castMessage, setCastMessage] = useState<string | null>(null);
   const [castError, setCastError] = useState<string | null>(null);
+  const [draftMessage, setDraftMessage] = useState<string | null>(null);
+  const [draftError, setDraftError] = useState<string | null>(null);
   const [writerProfileMessage, setWriterProfileMessage] = useState<string | null>(null);
   const [writerProfileError, setWriterProfileError] = useState<string | null>(null);
   const [pendingRegeneration, setPendingRegeneration] = useState<PendingRegeneration>(null);
@@ -92,8 +95,9 @@ export function usePlannerWorkspace() {
   );
   const hasPairing = Boolean(currentPlan.pairing);
   const hasPremise = Boolean(currentPlan.premise);
-  const hasStoryCast = currentPlan.cast.length > 0;
+  const hasStoryCast = currentPlan.cast.some((member) => member.include_in_story !== false);
   const hasChapterDetails = currentPlan.chapter_details.length > 0;
+  const hasDraftChapters = currentPlan.draft_chapters.some((chapter) => chapter.draft_text.trim() !== '');
   const hasSavedPlan = Boolean(currentPlan.id);
 
   useEffect(() => {
@@ -219,6 +223,88 @@ export function usePlannerWorkspace() {
 
   const saveEditedCast = async (cast: CastMember[]) => {
     await saveEditedPlan({ ...currentPlan, cast });
+  };
+
+  const saveEditedDraftChapters = async (draftChapters: DraftChapter[]) => {
+    await saveEditedPlan({ ...currentPlan, draft_chapters: draftChapters });
+  };
+
+  const generateChapterDraft = async (chapterNumber: number, options?: { revisionPrompt?: string; existingDraft?: string }): Promise<DraftChapter> => {
+    const leadOne = currentPlan.lead_one;
+    const leadTwo = currentPlan.lead_two;
+    const premise = currentPlan.premise;
+
+    if (!leadOne || !leadTwo || !premise || currentPlan.chapter_details.length === 0) {
+      throw new Error('Generate the full planning package before drafting chapters.');
+    }
+
+    let generatedDraft: DraftChapter | null = null;
+
+    await runTask(
+      async () => {
+        generatedDraft = await generatorApi.chapterDraft({
+          title: currentPlan.title,
+          concept_brief: currentPlan.concept_brief,
+          setting: currentPlan.setting,
+          romance_configuration: currentPlan.romance_configuration,
+          main_character_focus: currentPlan.main_character_focus,
+          romance_structure_notes: currentPlan.romance_structure_notes,
+          pov_mode: currentPlan.pov_mode,
+          pov_notes: currentPlan.pov_notes,
+          dominant_romance_arc: currentPlan.dominant_romance_arc,
+          central_external_pressure: currentPlan.central_external_pressure,
+          emotional_question: currentPlan.emotional_question,
+          heat_level: currentPlan.heat_level,
+          notes: currentPlan.notes,
+          flavor_seeds: currentPlan.flavor_seeds,
+          lead_one: leadOne,
+          lead_two: leadTwo,
+          pairing: currentPlan.pairing,
+          premise,
+          cast: currentPlan.cast,
+          chapter_details: currentPlan.chapter_details,
+          draft_chapters: currentPlan.draft_chapters,
+          chapter_number: chapterNumber,
+          existing_draft: options?.existingDraft ?? '',
+          revision_prompt: options?.revisionPrompt ?? '',
+        });
+
+        if (generatedDraft === null) {
+          throw new Error('Draft generation failed.');
+        }
+
+        const freshDraft = generatedDraft;
+        if (freshDraft === null) {
+          throw new Error('Draft generation failed.');
+        }
+
+        const nextDraftChapters = currentPlan.chapter_details.map((chapter) => {
+          const existing = currentPlan.draft_chapters.find((entry) => entry.chapter_number === chapter.chapter_number);
+          if (chapter.chapter_number !== chapterNumber) {
+            return existing ?? { ...new DraftChapter(), chapter_number: chapter.chapter_number, chapter_title: chapter.chapter_title };
+          }
+
+          return {
+            ...new DraftChapter(),
+            ...existing,
+            ...freshDraft,
+            chapter_number: chapter.chapter_number,
+            chapter_title: freshDraft.chapter_title || chapter.chapter_title,
+          };
+        });
+
+        await saveEditedDraftChapters(nextDraftChapters);
+        setDraftMessage(options?.revisionPrompt?.trim() ? `Chapter ${chapterNumber} revised.` : `Chapter ${chapterNumber} drafted.`);
+      },
+      setDraftError,
+      'chapter_draft'
+    );
+
+    if (generatedDraft === null) {
+      throw new Error('Unable to generate chapter draft.');
+    }
+
+    return generatedDraft;
   };
 
   const createLibraryEntry = async (member: CastMember) => {
@@ -451,6 +537,11 @@ export function usePlannerWorkspace() {
       return;
     }
 
+    if (currentPlan.cast.length === 0) {
+      setPlannerError('Add or generate story cast before building the premise.');
+      return;
+    }
+
     await runTask(async () => {
       const savedPlan = await generatorApi.premise({
         plan_id: currentPlan.id,
@@ -469,6 +560,7 @@ export function usePlannerWorkspace() {
         lead_one: leadOne,
         lead_two: leadTwo,
         pairing: currentPlan.pairing,
+        cast: currentPlan.cast,
         target_words: currentPlan.target_words,
         trope_notes: currentPlan.trope_notes,
         notes: currentPlan.notes,
@@ -477,7 +569,7 @@ export function usePlannerWorkspace() {
       upsertProject(savedPlan);
       replacePlan(savedPlan);
       setPlannerMessage('Premise generated. Next: detail the chapter plan.');
-      scrollToStage('planner-step-5');
+      scrollToStage('planner-step-6');
     }, setPlannerError, 'premise');
   };
 
@@ -520,6 +612,7 @@ export function usePlannerWorkspace() {
         replacePlan(savedPlan);
         await reloadLibraryEntries();
         setCastMessage('Story cast generated and library refreshed.');
+        scrollToStage('planner-step-5');
       },
       setCastError,
       'cast'
@@ -564,7 +657,7 @@ export function usePlannerWorkspace() {
       upsertProject(savedPlan);
       replacePlan(savedPlan);
       setPlannerMessage('Chapter details generated. Next: save and review the story.');
-      scrollToStage('planner-step-6');
+      scrollToStage('planner-step-7');
     }, setPlannerError, 'chapters');
   };
 
@@ -711,9 +804,11 @@ export function usePlannerWorkspace() {
 
   const workspaceDescription =
     activeView === 'planner'
-      ? 'Plan the current novella here: concept, leads, pairing, premise, and protected notes.'
+      ? 'Plan the current novella here: concept, leads, pairing, cast pressure, premise, chapters, and protected notes.'
       : activeView === 'cast'
         ? 'Manage story-specific cast on the left side of the workspace and reusable cross-story characters on the right.'
+        : activeView === 'drafts'
+          ? 'Draft chapters from the saved plan here, revise them against the latest board, and read the compiled manuscript.'
         : activeView === 'summary'
           ? 'Review the full saved story board here before exporting it into a drafting package.'
           : 'Adjust the writer voice used during generation and included in export packages.';
@@ -742,6 +837,8 @@ export function usePlannerWorkspace() {
     tropeError,
     castMessage,
     castError,
+    draftMessage,
+    draftError,
     writerProfileMessage,
     writerProfileError,
     pendingRegeneration,
@@ -751,6 +848,7 @@ export function usePlannerWorkspace() {
     hasPremise,
     hasStoryCast,
     hasChapterDetails,
+    hasDraftChapters,
     hasSavedPlan,
     workspaceDescription,
     updatePlanField,
@@ -762,6 +860,7 @@ export function usePlannerWorkspace() {
     saveEditedPremise,
     saveChapterDetails,
     saveEditedCast,
+    saveEditedDraftChapters,
     createLibraryEntry,
     updateLibraryEntry,
     deleteLibraryEntry,
@@ -778,6 +877,7 @@ export function usePlannerWorkspace() {
     confirmRegeneration,
     cancelRegeneration,
     generateCastMemberFromPrompt,
+    generateChapterDraft,
     deletePlan,
     replacePlan,
     resetPlan,

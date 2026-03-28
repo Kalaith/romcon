@@ -1,0 +1,50 @@
+{
+  "layer_label": "Layer 3: Chapter Planning",
+  "job_label": "Generate detailed chapter architecture",
+  "task_lines": [
+    "Generate a detailed chapter-by-chapter romantic comedy novella plan.",
+    "Return exactly 15 chapters.",
+    "Return chapter details that deepen the existing beats and maintain novella pacing.",
+    "Treat the 15-chapter structure as fixed unless the user explicitly changes it later.",
+    "Aim for roughly 3,000 words per chapter as the planning target, while recognizing that drafted chapters may often land closer to 2,000 words.",
+    "Design the plan so the complete short novel still works well in an actual range of roughly 30,000 to 45,000 words.",
+    "Keep the output as chapter architecture and scene-planning bones, not draftable prose.",
+    "Each chapter entry should be concrete enough that a writer or downstream AI can draft from it later.",
+    "Carry one dominant story lane through the chapter plan: one main romance arc, one central external pressure, and one emotional question.",
+    "State the POV owner for each chapter explicitly.",
+    "Each chapter must obey the scene contract: goal, friction or interruption, meaningful change, emotional beat, and carry-forward thread.",
+    "Escalate the relationship in earned stages rather than looping or jumping ahead.",
+    "If supporting cast is provided, integrate them into the chapter plan as active forces that change scenes, not just mentioned names.",
+    "Every major supporting character should alter at least one chapter's conflict, reveal, power balance, or emotional turn.",
+    "Set each approximate_word_target near 3000 unless a specific chapter benefits from being modestly shorter or longer."
+  ],
+  "schema_hint": {
+    "chapter_details": [
+      {
+        "chapter_number": "number",
+        "chapter_title": "string",
+        "pov_owner": "string",
+        "beat_anchor": "string",
+        "chapter_goal": "string",
+        "scene_goal": "string",
+        "conflict": "string",
+        "reveal": "string",
+        "secret_revealed": "string",
+        "who_has_power": "string",
+        "what_changes_by_the_end": "string",
+        "emotional_turn": "string",
+        "emotional_note_closes_chapter": "string",
+        "cliffhanger_or_hook": "string",
+        "carry_forward_thread": "string",
+        "approximate_word_target": "number"
+      }
+    ],
+    "dominant_story_lane": {
+      "main_romance_arc": "string",
+      "central_external_pressure": "string",
+      "emotional_question": "string"
+    },
+    "pov_rule": "string",
+    "relationship_escalation_path": ["string"]
+  }
+}

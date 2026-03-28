@@ -1,5 +1,5 @@
 import api from './client';
-import type { CastMember, CharacterPack, PairingResult, Plan, PremiseResult } from '../types';
+import type { CastMember, CharacterPack, DraftChapter, PairingResult, Plan, PremiseResult } from '../types';
 
 export const generatorApi = {
   async concept(payload: {
@@ -176,6 +176,36 @@ export const generatorApi = {
     return response.data.data as Plan;
   },
 
+  async chapterDraft(payload: {
+    title: string;
+    concept_brief: string;
+    setting: string;
+    romance_configuration: string;
+    main_character_focus: string;
+    romance_structure_notes: string;
+    pov_mode: string;
+    pov_notes: string;
+    dominant_romance_arc: string;
+    central_external_pressure: string;
+    emotional_question: string;
+    heat_level: string;
+    notes: string;
+    flavor_seeds: string[];
+    lead_one: CharacterPack;
+    lead_two: CharacterPack;
+    pairing: PairingResult | null;
+    premise: PremiseResult;
+    cast: CastMember[];
+    chapter_details: Plan['chapter_details'];
+    draft_chapters: DraftChapter[];
+    chapter_number: number;
+    existing_draft?: string;
+    revision_prompt?: string;
+  }): Promise<DraftChapter> {
+    const response = await api.post('/generate/chapter-draft', payload);
+    return response.data.data as DraftChapter;
+  },
+
   async castMember(payload: {
     prompt: string;
     setting: string;
@@ -218,6 +248,7 @@ export const generatorApi = {
     lead_one: CharacterPack;
     lead_two: CharacterPack;
     pairing: PairingResult | null;
+    cast: CastMember[];
     flavor_seeds: string[];
   }): Promise<Plan> {
     const response = await api.post('/generate/premise', payload);

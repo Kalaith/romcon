@@ -6,6 +6,7 @@ type WorkflowStepsProps = {
   leadOne: CharacterPack | null;
   leadTwo: CharacterPack | null;
   pairing: PairingResult | null;
+  hasStoryCast: boolean;
   premise: PremiseResult | null;
   hasChapterDetails: boolean;
   isSaved: boolean;
@@ -18,6 +19,7 @@ function stageComplete(
   leadOne: CharacterPack | null,
   leadTwo: CharacterPack | null,
   pairing: PairingResult | null,
+  hasStoryCast: boolean,
   premise: PremiseResult | null,
   hasChapterDetails: boolean,
   isSaved: boolean
@@ -31,6 +33,9 @@ function stageComplete(
   if (stepKey === 'pairing') {
     return Boolean(pairing);
   }
+  if (stepKey === 'cast') {
+    return hasStoryCast;
+  }
   if (stepKey === 'premise') {
     return Boolean(premise);
   }
@@ -43,16 +48,16 @@ function stageComplete(
   return false;
 }
 
-export function WorkflowSteps({ hasConcept, leadOne, leadTwo, pairing, premise, hasChapterDetails, isSaved, onStepClick }: WorkflowStepsProps) {
+export function WorkflowSteps({ hasConcept, leadOne, leadTwo, pairing, hasStoryCast, premise, hasChapterDetails, isSaved, onStepClick }: WorkflowStepsProps) {
   const completionByStep = workflowSteps.map((step) => ({
     ...step,
-    complete: stageComplete(step.key, hasConcept, leadOne, leadTwo, pairing, premise, hasChapterDetails, isSaved),
+    complete: stageComplete(step.key, hasConcept, leadOne, leadTwo, pairing, hasStoryCast, premise, hasChapterDetails, isSaved),
   }));
   const currentIndex = completionByStep.findIndex((step) => !step.complete);
   const activeIndex = currentIndex === -1 ? completionByStep.length - 1 : currentIndex;
 
   return (
-    <section className="mb-6 grid gap-3 md:grid-cols-6">
+    <section className="mb-6 grid gap-3 md:grid-cols-7">
       {completionByStep.map((step, index) => {
         const complete = step.complete;
         const isCurrent = index === activeIndex && !complete;

@@ -84,6 +84,15 @@ export class ChapterDetail {
   approximate_word_target = 3000;
 }
 
+export class DraftChapter {
+  chapter_number = 1;
+  chapter_title = '';
+  chapter_summary = '';
+  draft_text = '';
+  status = 'not_started';
+  updated_at = '';
+}
+
 export class CastMember {
   name = '';
   role = '';
@@ -121,6 +130,7 @@ export class Plan {
   flavor_seeds: string[] = [];
   cast: CastMember[] = [];
   chapter_details: ChapterDetail[] = [];
+  draft_chapters: DraftChapter[] = [];
   heat_level = 'sweet';
   target_words = 45000;
   summary = '';

@@ -86,6 +86,13 @@ $capsule->addConnection([
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
+$schema = $capsule->schema();
+if ($schema->hasTable('plans') && !$schema->hasColumn('plans', 'draft_chapters_json')) {
+    $schema->table('plans', static function ($table): void {
+        $table->longText('draft_chapters_json')->nullable()->after('chapter_details_json');
+    });
+}
+
 $app = AppFactory::create();
 
 $basePath = trim((string) ($_ENV['API_BASE_PATH'] ?? ''));

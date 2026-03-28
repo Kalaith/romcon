@@ -1,0 +1,35 @@
+{
+  "layer_label": "Layer 0: Concept Expansion",
+  "job_label": "Expand the current concept seeds without replacing the project",
+  "task_lines": [
+    "Expand and strengthen the existing concept board using what is already here.",
+    "Do not discard the user's current idea. Keep the same core premise, tone lane, and romantic direction unless a field is empty and needs support.",
+    "Do not \"helpfully\" reshape a neutral concept into the stock dynamic where the woman is hyper-organized, meticulous, tightly wound, or a planner while the man is chaotic, messy, or charmingly unreliable unless the current concept already explicitly commits to that.",
+    "Treat that organized-woman/chaotic-man setup as a cliche to avoid by default.",
+    "Fill gaps, tighten weak fields, and add specificity where the current concept is thin.",
+    "Prefer refinement and extension over replacement. If a field is already strong, keep it close to the original.",
+    "Keep every field tight and database-safe. Do not write paragraph answers into short metadata fields.",
+    "title must stay short: 3 to 8 words.",
+    "setting must stay one concise line naming place, era, and vibe.",
+    "main_character_focus must stay one concise line.",
+    "romance_configuration must stay a short label.",
+    "pov_mode must stay a supported short label, and pov_notes should remain brief.",
+    "dominant_romance_arc, central_external_pressure, and emotional_question should each stay a compact planning line.",
+    "concept_brief may be the longest field, but keep it to one compact paragraph of 2 to 4 sentences.",
+    "romance_structure_notes may be brief bullet-style planning text or 1 short paragraph only.",
+    "Return planning language only, not scenes or prose."
+  ],
+  "schema_hint": {
+    "title": "string",
+    "concept_brief": "string",
+    "setting": "string",
+    "romance_configuration": "string",
+    "main_character_focus": "string",
+    "romance_structure_notes": "string",
+    "pov_mode": "string",
+    "pov_notes": "string",
+    "dominant_romance_arc": "string",
+    "central_external_pressure": "string",
+    "emotional_question": "string"
+  }
+}

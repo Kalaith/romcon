@@ -124,6 +124,7 @@ final class PlanController extends BaseController
         $plan->flavor_seeds_json = json_encode($data['flavor_seeds'] ?? []);
         $plan->cast_json = json_encode($data['cast'] ?? []);
         $plan->chapter_details_json = json_encode($data['chapter_details'] ?? []);
+        $plan->draft_chapters_json = json_encode($data['draft_chapters'] ?? []);
         $plan->heat_level = HeatLevelPolicy::normalize((string) ($data['heat_level'] ?? 'sweet'), $isGuest);
         $plan->target_words = max(10000, (int) ($data['target_words'] ?? 45000));
         $plan->summary = isset($data['summary']) ? (string) $data['summary'] : null;
@@ -187,6 +188,8 @@ final class PlanController extends BaseController
                 'pairing' => $pairingSummary,
                 'premise' => $premiseSummary,
                 'chapter_details' => $data['chapter_details'] ?? [],
+                'draft_chapters' => $data['draft_chapters'] ?? [],
+                'compiled_manuscript' => $this->buildCompiledManuscript($data),
                 'flavor_seeds' => $data['flavor_seeds'],
                 'notes' => $data['notes'],
             ],
@@ -273,6 +276,37 @@ final class PlanController extends BaseController
         }
 
         return '';
+    }
+
+    private function buildCompiledManuscript(array $data): string
+    {
+        $draftChapters = is_array($data['draft_chapters'] ?? null) ? $data['draft_chapters'] : [];
+        if ($draftChapters === []) {
+            return '';
+        }
+
+        usort($draftChapters, static function (array $left, array $right): int {
+            return ((int) ($left['chapter_number'] ?? 0)) <=> ((int) ($right['chapter_number'] ?? 0));
+        });
+
+        $parts = [];
+        foreach ($draftChapters as $chapter) {
+            $draftText = trim((string) ($chapter['draft_text'] ?? ''));
+            if ($draftText === '') {
+                continue;
+            }
+
+            $chapterNumber = (int) ($chapter['chapter_number'] ?? 0);
+            $chapterTitle = trim((string) ($chapter['chapter_title'] ?? ''));
+            $heading = $chapterNumber > 0 ? "Chapter {$chapterNumber}" : 'Chapter';
+            if ($chapterTitle !== '') {
+                $heading .= ': ' . $chapterTitle;
+            }
+
+            $parts[] = $heading . "\n\n" . $draftText;
+        }
+
+        return implode("\n\n", $parts);
     }
 
     private function slugify(string $value): string

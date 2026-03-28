@@ -9,14 +9,11 @@ type ConceptBoardProps = {
   flavorSeeds: FlavorSeed[];
   tropes: Trope[];
   isGenerating: boolean;
-  activeGeneration: 'concept' | 'concept_expand' | 'concept_polish' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | 'cast_member' | null;
+  activeGeneration: 'concept' | 'concept_expand' | 'concept_polish' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | 'cast_member' | 'chapter_draft' | null;
   message: string | null;
   error: string | null;
-  characterButtonLabel: string;
   conceptButtonLabel: string;
   conceptExpandButtonLabel: string;
-  pairingButtonLabel: string;
-  premiseButtonLabel: string;
   overwriteHint?: string | null;
   isGuestUser: boolean;
   tropeMessage: string | null;
@@ -27,11 +24,8 @@ type ConceptBoardProps = {
   onDeleteFlavorSeed: (seedId: number, label: string) => void;
   onCreateTrope: (payload: { name: string; clash_engine: string; best_for: string; is_global: boolean }) => void;
   onDeleteTrope: (tropeId: number) => void;
-  onGenerateCharacters: () => void;
   onGenerateConcept: () => void;
   onExpandConcept: () => void;
-  onGeneratePairing: () => void;
-  onGeneratePremise: () => void;
 };
 
 type ConceptSectionProps = {
@@ -66,11 +60,8 @@ export function ConceptBoard({
   activeGeneration,
   message,
   error,
-  characterButtonLabel,
   conceptButtonLabel,
   conceptExpandButtonLabel,
-  pairingButtonLabel,
-  premiseButtonLabel,
   overwriteHint,
   isGuestUser,
   tropeMessage,
@@ -81,11 +72,8 @@ export function ConceptBoard({
   onDeleteFlavorSeed,
   onCreateTrope,
   onDeleteTrope,
-  onGenerateCharacters,
   onGenerateConcept,
   onExpandConcept,
-  onGeneratePairing,
-  onGeneratePremise,
 }: ConceptBoardProps) {
   const allowedHeatLevels = getAllowedHeatLevels(isGuestUser);
   const selectedHeatLevel = getHeatLevelMeta(currentPlan.heat_level);
@@ -93,9 +81,6 @@ export function ConceptBoard({
   const quickTropes = tropes.slice(0, 8);
   const isGeneratingConcept = activeGeneration === 'concept';
   const isExpandingConcept = activeGeneration === 'concept_expand';
-  const isGeneratingCharacters = activeGeneration === 'characters';
-  const isGeneratingPairing = activeGeneration === 'pairing';
-  const isGeneratingPremise = activeGeneration === 'premise';
 
   const toggleFlavorSeed = (label: string) => {
     const nextSeeds = currentPlan.flavor_seeds.includes(label)
@@ -358,18 +343,6 @@ export function ConceptBoard({
             onDelete={onDeleteFlavorSeed}
           />
         </ConceptSection>
-      </div>
-
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={onGenerateCharacters} disabled={isGenerating}>
-          {isGeneratingCharacters ? 'Generating...' : characterButtonLabel}
-        </button>
-        <button className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={onGeneratePairing} disabled={isGenerating}>
-          {isGeneratingPairing ? 'Generating...' : pairingButtonLabel}
-        </button>
-        <button className="rounded-full border border-rose-300 px-5 py-3 text-sm font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-60" onClick={onGeneratePremise} disabled={isGenerating}>
-          {isGeneratingPremise ? 'Generating...' : premiseButtonLabel}
-        </button>
       </div>
 
       {overwriteHint ? <p className="mt-3 text-sm text-rose-900/70">{overwriteHint}</p> : null}

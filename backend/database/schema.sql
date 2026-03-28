@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS plans (
     flavor_seeds_json LONGTEXT NULL,
     cast_json LONGTEXT NULL,
     chapter_details_json LONGTEXT NULL,
+    draft_chapters_json LONGTEXT NULL,
     heat_level VARCHAR(40) NOT NULL DEFAULT 'sweet',
     target_words INT NOT NULL DEFAULT 45000,
     summary TEXT NULL,

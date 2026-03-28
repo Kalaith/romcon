@@ -1,0 +1,37 @@
+{
+  "layer_label": "Layer 2: Structured Outline",
+  "job_label": "Evaluate the core pairing",
+  "task_lines": [
+    "Focus on friction, fit, comedic engines, emotional lessons, and trope suitability.",
+    "Treat this as the central romance even if the wider story includes other contenders.",
+    "Identify the dominant romance lane, the central emotional question, and the external pressure most likely to test this pairing.",
+    "Assume default POV discipline is single close third person unless the wider plan later overrides it.",
+    "Return planning analysis, not scenes or prose."
+  ],
+  "schema_hint": {
+    "pairing_hook": "string",
+    "why_they_clash": ["string"],
+    "why_they_fit": ["string"],
+    "scene_engines": ["string"],
+    "best_trope": "string",
+    "trope_table": [
+      {
+        "trope": "string",
+        "score": 1,
+        "reason": "string"
+      }
+    ],
+    "emotional_lessons": {
+      "lead_one": "string",
+      "lead_two": "string"
+    },
+    "dominant_story_lane": {
+      "main_romance_arc": "string",
+      "central_external_pressure": "string",
+      "emotional_question": "string"
+    },
+    "pov_rule": "string",
+    "relationship_escalation_path": ["string"],
+    "risk_notes": ["string"]
+  }
+}

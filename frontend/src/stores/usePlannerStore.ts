@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { plansApi } from '../api/plans';
-import { ChapterDetail, PairingResult, Plan, PremiseResult } from '../types';
+import { ChapterDetail, DraftChapter, PairingResult, Plan, PremiseResult } from '../types';
 
 type PlannerState = {
   currentPlan: Plan;
@@ -65,6 +65,9 @@ const normalizePremise = (premise?: Partial<PremiseResult> | null): PremiseResul
 const normalizeChapterDetails = (chapterDetails?: Array<Partial<ChapterDetail>>): ChapterDetail[] =>
   Array.isArray(chapterDetails) ? chapterDetails.map((chapter) => ({ ...new ChapterDetail(), ...chapter })) : [];
 
+const normalizeDraftChapters = (draftChapters?: Array<Partial<DraftChapter>>): DraftChapter[] =>
+  Array.isArray(draftChapters) ? draftChapters.map((chapter) => ({ ...new DraftChapter(), ...chapter })) : [];
+
 const normalizePlan = (plan?: Partial<Plan> | null): Plan => {
   const base = createDefaultPlan();
 
@@ -74,6 +77,7 @@ const normalizePlan = (plan?: Partial<Plan> | null): Plan => {
     flavor_seeds: Array.isArray(plan?.flavor_seeds) ? plan.flavor_seeds : base.flavor_seeds,
     cast: Array.isArray(plan?.cast) ? plan.cast : base.cast,
     chapter_details: normalizeChapterDetails(plan?.chapter_details as Array<Partial<ChapterDetail>> | undefined),
+    draft_chapters: normalizeDraftChapters(plan?.draft_chapters as Array<Partial<DraftChapter>> | undefined),
     pairing: normalizePairing(plan?.pairing as Partial<PairingResult> | null | undefined),
     premise: normalizePremise(plan?.premise as Partial<PremiseResult> | null | undefined),
     trope_notes: Array.isArray(plan?.trope_notes) ? plan.trope_notes : base.trope_notes,

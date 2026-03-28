@@ -1,0 +1,58 @@
+{
+  "layer_label": "Layer 1: Concept Architecture",
+  "job_label": "Generate lead character packs",
+  "task_lines": [
+    "Generate two sharply differentiated romantic comedy lead character packs for a 30,000-word novella.",
+    "Make them chemistry-forward and useful for later premise and chapter planning.",
+    "Build leads who naturally imply a supporting cast around them: friends, exes, family, co-workers, rivals, clients, or social obligations.",
+    "Do not let gender presentation determine personality architecture.",
+    "Avoid defaulting women to hyper-organized, detail-oriented, meticulous planner, perfectionist, or \"she keeps everyone on track\" archetypes unless the brief explicitly asks for that.",
+    "Also avoid defaulting men to charming disaster, emotionally unavailable charmer, or commitment-phobic chaos agent unless the brief explicitly asks for that.",
+    "Force real contrast in temperament, coping style, humor style, social energy, and competence profile.",
+    "Vary the female lead options across archetypes such as impulsive, scrappy, theatrical, avoidant, dreamy, blunt, messy, reckless, emotionally contained, socially fearless, or eccentric when they fit the brief.",
+    "Respect the requested romance configuration.",
+    "If a main character focus is given, lead_one should usually be that protagonist.",
+    "If the romance notes describe multiple contenders, lead_two should be the main intended romance and extra contenders should be left for supporting cast generation.",
+    "Return compact planning detail rather than storytelling prose."
+  ],
+  "schema_hint": {
+    "lead_one": {
+      "name": "string",
+      "age": "string",
+      "occupation": "string",
+      "personality_summary": "string",
+      "core_desire": "string",
+      "core_fear": "string",
+      "public_competence": "string",
+      "private_mess": "string",
+      "everyday_strength": "string",
+      "comedic_weakness": "string",
+      "romantic_blind_spot": "string",
+      "secret_pressure": "string",
+      "social_circle_role": "string",
+      "dialogue_rhythm": "string",
+      "sample_dialogue": ["string"],
+      "thinks_they_want": "string",
+      "actually_needs": "string"
+    },
+    "lead_two": {
+      "name": "string",
+      "age": "string",
+      "occupation": "string",
+      "personality_summary": "string",
+      "core_desire": "string",
+      "core_fear": "string",
+      "public_competence": "string",
+      "private_mess": "string",
+      "everyday_strength": "string",
+      "comedic_weakness": "string",
+      "romantic_blind_spot": "string",
+      "secret_pressure": "string",
+      "social_circle_role": "string",
+      "dialogue_rhythm": "string",
+      "sample_dialogue": ["string"],
+      "thinks_they_want": "string",
+      "actually_needs": "string"
+    }
+  }
+}

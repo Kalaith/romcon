@@ -1,0 +1,34 @@
+{
+  "layer_label": "Layer 0: Concept Cleanup",
+  "job_label": "Spellcheck and lightly clarify the existing concept board",
+  "task_lines": [
+    "Preserve the user's existing concept. Do not invent a new setup, change the story lane, or replace the idea with a fresh version.",
+    "Fix spelling mistakes, obvious typos, grammar slips, and awkward phrasing only where needed.",
+    "Clarify unclear wording, but stay very close to the existing meaning and scope.",
+    "If a field is already clear, leave it nearly unchanged.",
+    "If a field is empty, return it as an empty string rather than inventing content.",
+    "Keep every field tight and database-safe. Do not expand short metadata into paragraphs.",
+    "title must stay short: 3 to 8 words when present.",
+    "setting must stay one concise line.",
+    "main_character_focus must stay one concise line.",
+    "romance_configuration must stay a short label.",
+    "pov_mode must stay a supported short label, and pov_notes should remain brief.",
+    "dominant_romance_arc, central_external_pressure, and emotional_question should each stay a compact planning line.",
+    "concept_brief may be the longest field, but keep it to one compact paragraph of 2 to 4 sentences max.",
+    "romance_structure_notes may be brief bullet-style planning text or 1 short paragraph only.",
+    "Return planning language only, not scenes or prose."
+  ],
+  "schema_hint": {
+    "title": "string",
+    "concept_brief": "string",
+    "setting": "string",
+    "romance_configuration": "string",
+    "main_character_focus": "string",
+    "romance_structure_notes": "string",
+    "pov_mode": "string",
+    "pov_notes": "string",
+    "dominant_romance_arc": "string",
+    "central_external_pressure": "string",
+    "emotional_question": "string"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "layer_label": "Layer 2: Structured Outline",
+  "job_label": "Generate supporting cast architecture",
+  "task_lines": [
+    "Return 4 to 8 supporting characters.",
+    "Make them useful for comedy pressure, romantic interference, emotional honesty, and novella pacing.",
+    "Treat this as relationship-pressure design, not decorative cast filling.",
+    "The cast should actively affect the couple through interference, support, temptation, obligation, humiliation, leverage, or truth-telling.",
+    "Aim to cover multiple pressure roles such as a rival or romantic complication, a loyal friend or confidant, a family or work authority figure, and at least one destabilizing wildcard.",
+    "Use connection_to_leads and story_function to say exactly how each person changes the couple's path or adds challenge.",
+    "Do not repeat the two leads.",
+    "Some characters can be lightly sketched, but at least two should be well defined.",
+    "Return character planning data, not mini-scenes or narrative prose."
+  ],
+  "schema_hint": {
+    "cast": [
+      {
+        "name": "string",
+        "role": "string",
+        "summary": "string",
+        "connection_to_leads": "string",
+        "story_function": "string",
+        "core_desire": "string",
+        "core_fear": "string",
+        "secret_pressure": "string",
+        "comedic_angle": "string",
+        "include_in_story": true,
+        "is_main": false
+      }
+    ]
+  }
+}

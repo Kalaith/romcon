@@ -76,6 +76,7 @@ return function (App $app) {
         $generate->post('/cast', [GeneratorController::class, 'cast']);
         $generate->post('/cast-member', [GeneratorController::class, 'castMember']);
         $generate->post('/chapter-details', [GeneratorController::class, 'chapterDetails']);
+        $generate->post('/chapter-draft', [GeneratorController::class, 'chapterDraft']);
         $generate->post('/pairing', [GeneratorController::class, 'pairing']);
         $generate->post('/premise', [GeneratorController::class, 'premise']);
     })->add(new JwtAuthMiddleware());

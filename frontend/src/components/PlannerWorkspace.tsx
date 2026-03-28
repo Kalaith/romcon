@@ -4,6 +4,7 @@ import { usePlannerWorkspace } from '../hooks/usePlannerWorkspace';
 import { ProjectSidebar } from './ProjectSidebar';
 import { CastWorkspace } from './planner/CastWorkspace';
 import { ConfirmRegenerateModal } from './planner/ConfirmRegenerateModal';
+import { DraftWorkspace } from './planner/DraftWorkspace';
 import { StoryPlannerView } from './planner/StoryPlannerView';
 import { SummaryWorkspace } from './planner/SummaryWorkspace';
 import { WorkflowSteps } from './planner/WorkflowSteps';
@@ -13,31 +14,18 @@ export function PlannerWorkspace() {
   const workspace = usePlannerWorkspace();
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isGuestLinkBannerDismissed, setIsGuestLinkBannerDismissed] = useState(false);
+  const [activePlannerStage, setActivePlannerStage] = useState<'concept' | 'characters' | 'pairing' | 'cast' | 'premise' | 'chapters' | 'save'>('concept');
 
   const handleWorkflowStepClick = (stepKey: string) => {
-    const stageMap: Record<string, string> = {
-      concept: 'planner-step-1',
-      characters: 'planner-step-2',
-      pairing: 'planner-step-3',
-      premise: 'planner-step-4',
-      chapters: 'planner-step-5',
-      save: 'planner-step-6',
-    };
-
-    const targetId = stageMap[stepKey];
-    if (!targetId) {
+    const validStages = new Set(['concept', 'characters', 'pairing', 'cast', 'premise', 'chapters', 'save']);
+    if (!validStages.has(stepKey)) {
       return;
     }
 
     if (workspace.activeView !== 'planner') {
       workspace.setActiveView('planner');
     }
-
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
+    setActivePlannerStage(stepKey as typeof activePlannerStage);
   };
 
   const primaryAction = useMemo(() => {
@@ -73,6 +61,14 @@ export function PlannerWorkspace() {
       };
     }
 
+    if (!workspace.hasStoryCast) {
+      return {
+        label: workspace.activeGeneration === 'cast' ? 'Generating Story Cast...' : 'Generate Story Cast',
+        disabled: workspace.isGenerating,
+        onClick: () => workspace.requestGeneration('cast'),
+      };
+    }
+
     if (!workspace.hasPremise) {
       return {
         label: workspace.activeGeneration === 'premise' ? 'Generating Premise...' : 'Generate Premise',
@@ -103,6 +99,7 @@ export function PlannerWorkspace() {
     workspace.hasConcept,
     workspace.hasLeads,
     workspace.hasPairing,
+    workspace.hasStoryCast,
     workspace.hasPremise,
     workspace.isGenerating,
     workspace.isSaving,
@@ -111,7 +108,7 @@ export function PlannerWorkspace() {
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
       <ConfirmRegenerateModal
         body={workspace.pendingRegeneration ? workspace.regenerationModalCopy[workspace.pendingRegeneration].body : ''}
         confirmLabel={workspace.pendingRegeneration ? workspace.regenerationModalCopy[workspace.pendingRegeneration].confirmLabel : 'Replace'}
@@ -163,6 +160,9 @@ export function PlannerWorkspace() {
             </button>
             <button className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'cast' ? 'bg-rose-600 text-white' : 'text-rose-800'}`} onClick={() => workspace.setActiveView('cast')}>
               Cast Library
+            </button>
+            <button className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'drafts' ? 'bg-rose-600 text-white' : 'text-rose-800'}`} onClick={() => workspace.setActiveView('drafts')}>
+              Draft Studio
             </button>
             <button
               className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'writer_profile' ? 'bg-rose-600 text-white' : 'text-rose-800'}`}
@@ -228,6 +228,7 @@ export function PlannerWorkspace() {
         leadTwo={workspace.currentPlan.lead_two}
         pairing={workspace.currentPlan.pairing}
         premise={workspace.currentPlan.premise}
+        hasStoryCast={workspace.hasStoryCast}
         hasChapterDetails={workspace.hasChapterDetails}
         isSaved={workspace.hasSavedPlan && workspace.hasChapterDetails}
         onStepClick={handleWorkflowStepClick}
@@ -241,12 +242,15 @@ export function PlannerWorkspace() {
         <motion.main initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {workspace.activeView === 'planner' ? (
             <StoryPlannerView
+              activeStage={activePlannerStage}
               currentPlan={workspace.currentPlan}
+              libraryEntries={workspace.libraryEntries}
               flavorSeeds={workspace.flavorSeeds}
               tropes={workspace.tropes}
               hasConcept={workspace.hasConcept}
               hasLeads={workspace.hasLeads}
               hasPairing={workspace.hasPairing}
+              hasStoryCast={workspace.hasStoryCast}
               hasPremise={workspace.hasPremise}
               hasChapterDetails={workspace.hasChapterDetails}
               isGenerating={workspace.isGenerating}
@@ -254,11 +258,14 @@ export function PlannerWorkspace() {
               isSaving={workspace.isSaving}
               plannerMessage={workspace.plannerMessage}
               plannerError={workspace.plannerError}
+              castMessage={workspace.castMessage}
+              castError={workspace.castError}
               tropeMessage={workspace.tropeMessage}
               tropeError={workspace.tropeError}
               isGuestUser={Boolean(workspace.user?.is_guest)}
               canCreateGlobalTropes={workspace.user?.role === 'admin'}
               onFieldChange={workspace.updatePlanField}
+              onStageChange={setActivePlannerStage}
               onCreateFlavorSeed={(label) => void workspace.createFlavorSeed(label)}
               onDeleteFlavorSeed={(seedId, label) => void workspace.deleteFlavorSeed(seedId, label)}
               onCreateTrope={(payload) => void workspace.createTrope(payload)}
@@ -267,12 +274,17 @@ export function PlannerWorkspace() {
               onExpandConcept={() => void workspace.expandConcept()}
               onGenerateCharacters={() => workspace.requestGeneration('characters')}
               onGeneratePairing={() => workspace.requestGeneration('pairing')}
+              onGenerateCast={() => workspace.requestGeneration('cast')}
               onGeneratePremise={() => workspace.requestGeneration('premise')}
               onGenerateChapterDetails={() => workspace.requestGeneration('chapters')}
               onSaveEditedCharacter={workspace.saveEditedCharacter}
               onSaveEditedPairing={workspace.saveEditedPairing}
               onSaveEditedPremise={workspace.saveEditedPremise}
               onSaveChapterDetails={workspace.saveChapterDetails}
+              onGenerateMemberFromPrompt={workspace.generateCastMemberFromPrompt}
+              onSaveEditedCast={workspace.saveEditedCast}
+              onCreateLibraryEntry={workspace.createLibraryEntry}
+              onInjectLibraryEntry={workspace.injectLibraryEntry}
               onSaveAndReviewStory={() => void workspace.saveAndReviewStory()}
             />
           ) : workspace.activeView === 'cast' ? (
@@ -294,6 +306,16 @@ export function PlannerWorkspace() {
               storyCastButtonLabel={workspace.hasStoryCast ? 'Regenerate story cast' : 'Generate story cast'}
               storyCastOverwriteHint={workspace.hasStoryCast ? 'Regenerating will replace the current supporting cast for this story.' : null}
               storyCast={workspace.currentPlan.cast}
+            />
+          ) : workspace.activeView === 'drafts' ? (
+            <DraftWorkspace
+              plan={workspace.currentPlan}
+              isSaving={workspace.isSaving}
+              isGenerating={workspace.activeGeneration === 'chapter_draft'}
+              message={workspace.draftMessage}
+              error={workspace.draftError}
+              onGenerateChapterDraft={workspace.generateChapterDraft}
+              onSaveDraftChapters={workspace.saveEditedDraftChapters}
             />
           ) : workspace.activeView === 'summary' ? (
             <SummaryWorkspace plan={workspace.currentPlan} onBackToPlanner={() => workspace.setActiveView('planner')} onExport={(format) => void workspace.handleExport(format)} />

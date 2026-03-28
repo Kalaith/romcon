@@ -29,6 +29,7 @@ Focus on:
 
 ### Character Voice Protocol
 * Avoid generic shorthand like "sassy," "gruff," or "adorkable."
+* Do not repeatedly default female leads to organized perfectionist planner energy unless the concept specifically calls for it.
 * Define voice through rhythm, diction, and what the character refuses to say directly.
 * Provide 3 sample dialogue lines per lead whenever generating a full pack.
 

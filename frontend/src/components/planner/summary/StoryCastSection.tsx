@@ -20,7 +20,7 @@ export function StoryCastSection({ plan }: StoryCastSectionProps) {
               <div className="mt-4 space-y-4">
                 <SummaryField label="Summary" value={member.summary} />
                 <SummaryField label="Connection to Leads" value={member.connection_to_leads} />
-                <SummaryField label="Story Function" value={member.story_function} />
+                <SummaryField label="Impact on Couple" value={member.story_function} />
                 <SummaryField label="Core Fear" value={member.core_fear} />
                 <SummaryField label="Comedic Angle" value={member.comedic_angle} />
               </div>
