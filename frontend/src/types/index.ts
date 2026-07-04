@@ -37,6 +37,8 @@ export class CharacterPack {
 
 export class PairingResult {
   pairing_hook = '';
+  first_refusal_reason = '';
+  what_each_sees_in_the_other = { lead_one: '', lead_two: '' };
   why_they_clash: string[] = [];
   why_they_fit: string[] = [];
   scene_engines: string[] = [];
@@ -54,10 +56,16 @@ export class PremiseResult {
   premise = '';
   dominant_story_lane = { main_romance_arc: '', central_external_pressure: '', emotional_question: '' };
   pov_rule = '';
+  meet_cute = '';
+  first_refusal_reason = '';
   forced_proximity_device = '';
   primary_obstacle = '';
   midpoint_shift = '';
+  declaration = { type: '', description: '' };
+  blow_up = { type: '', description: '', telegraphed_by: '', why_talking_cannot_fix_it: '' };
+  grand_gesture = '';
   finale_payoff = '';
+  happily_ever_after = '';
   chapter_beats: string[] = [];
   relationship_escalation_path: string[] = [];
   scene_contract = { required_elements: [] as string[], chapter_change_rule: '' };
@@ -69,6 +77,7 @@ export class ChapterDetail {
   chapter_number = 1;
   chapter_title = '';
   pov_owner = '';
+  formula_beat = '';
   beat_anchor = '';
   chapter_goal = '';
   scene_goal = '';

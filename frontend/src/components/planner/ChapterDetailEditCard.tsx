@@ -31,6 +31,7 @@ export function ChapterDetailEditCard({ chapter, onChange, onRemove }: ChapterDe
           value={String(chapter.approximate_word_target)}
           onChange={(value) => updateField('approximate_word_target', Number(value) || 0)}
         />
+        <FormField label="Formula beat" value={chapter.formula_beat} onChange={(value) => updateField('formula_beat', value)} />
         <FormField label="Beat anchor" value={chapter.beat_anchor} onChange={(value) => updateField('beat_anchor', value)} textarea />
         <FormField label="Chapter goal" value={chapter.chapter_goal} onChange={(value) => updateField('chapter_goal', value)} textarea />
         <FormField label="Scene goal" value={chapter.scene_goal} onChange={(value) => updateField('scene_goal', value)} textarea />

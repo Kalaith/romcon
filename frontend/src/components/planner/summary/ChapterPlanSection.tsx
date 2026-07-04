@@ -18,9 +18,16 @@ export function ChapterPlanSection({ plan }: ChapterPlanSectionProps) {
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">Chapter {chapter.chapter_number}</p>
                   <h3 className="font-display text-2xl text-rose-950">{chapter.chapter_title || `Chapter ${chapter.chapter_number}`}</h3>
                 </div>
-                <span className="rounded-full bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                  {chapter.approximate_word_target.toLocaleString()} words
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {chapter.formula_beat && (
+                    <span className="rounded-full bg-rose-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-800">
+                      {chapter.formula_beat}
+                    </span>
+                  )}
+                  <span className="rounded-full bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                    {chapter.approximate_word_target.toLocaleString()} words
+                  </span>
+                </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <SummaryField label="Beat Anchor" value={chapter.beat_anchor} />

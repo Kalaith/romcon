@@ -37,6 +37,8 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
         chapter_change_rule: premise.scene_contract.chapter_change_rule,
       },
       supporting_cast_roles: [...premise.supporting_cast_roles],
+      declaration: { ...premise.declaration },
+      blow_up: { ...premise.blow_up },
     });
     setIsEditing(true);
   };
@@ -75,10 +77,52 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
           <FormField label="Logline" value={active.logline} onChange={(value) => updateField('logline', value)} textarea />
           <FormField label="Premise" value={active.premise} onChange={(value) => updateField('premise', value)} textarea />
           <div className="grid gap-4 md:grid-cols-2">
+            <FormField label="Meet-cute" value={active.meet_cute} onChange={(value) => updateField('meet_cute', value)} textarea />
+            <FormField label="First refusal reason" value={active.first_refusal_reason} onChange={(value) => updateField('first_refusal_reason', value)} textarea />
             <FormField label="Forced proximity device" value={active.forced_proximity_device} onChange={(value) => updateField('forced_proximity_device', value)} textarea />
             <FormField label="Primary obstacle" value={active.primary_obstacle} onChange={(value) => updateField('primary_obstacle', value)} textarea />
             <FormField label="Midpoint shift" value={active.midpoint_shift} onChange={(value) => updateField('midpoint_shift', value)} textarea />
+            <FormField label="Grand gesture" value={active.grand_gesture} onChange={(value) => updateField('grand_gesture', value)} textarea />
             <FormField label="Finale payoff" value={active.finale_payoff} onChange={(value) => updateField('finale_payoff', value)} textarea />
+            <FormField label="Happily ever after" value={active.happily_ever_after} onChange={(value) => updateField('happily_ever_after', value)} textarea />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              label="Declaration type (false_high or false_low)"
+              value={active.declaration.type}
+              onChange={(value) => updateField('declaration', { ...active.declaration, type: value })}
+            />
+            <FormField
+              label="Declaration description"
+              value={active.declaration.description}
+              onChange={(value) => updateField('declaration', { ...active.declaration, description: value })}
+              textarea
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              label="Blow-up type (extrinsic or intrinsic)"
+              value={active.blow_up.type}
+              onChange={(value) => updateField('blow_up', { ...active.blow_up, type: value })}
+            />
+            <FormField
+              label="Blow-up description"
+              value={active.blow_up.description}
+              onChange={(value) => updateField('blow_up', { ...active.blow_up, description: value })}
+              textarea
+            />
+            <FormField
+              label="Telegraphed by"
+              value={active.blow_up.telegraphed_by}
+              onChange={(value) => updateField('blow_up', { ...active.blow_up, telegraphed_by: value })}
+              textarea
+            />
+            <FormField
+              label="Why talking cannot fix it"
+              value={active.blow_up.why_talking_cannot_fix_it}
+              onChange={(value) => updateField('blow_up', { ...active.blow_up, why_talking_cannot_fix_it: value })}
+              textarea
+            />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <FormField
@@ -135,11 +179,46 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
               <p className="mt-2"><strong>Emotional question:</strong> {active.dominant_story_lane.emotional_question || 'Not set yet.'}</p>
             </div>
             <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-              <p><strong>Forced proximity:</strong> {active.forced_proximity_device}</p>
+              <p><strong>Meet-cute:</strong> {active.meet_cute || 'Not set yet.'}</p>
+              <p className="mt-2"><strong>First refusal:</strong> {active.first_refusal_reason || 'Not set yet.'}</p>
+              <p className="mt-2"><strong>Forced proximity:</strong> {active.forced_proximity_device}</p>
               <p className="mt-2"><strong>Primary obstacle:</strong> {active.primary_obstacle}</p>
               <p className="mt-2"><strong>Midpoint shift:</strong> {active.midpoint_shift}</p>
-              <p className="mt-2"><strong>Finale payoff:</strong> {active.finale_payoff}</p>
               <p className="mt-2"><strong>Comedic motif:</strong> {active.recurring_comedic_motif}</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+              <p className="text-sm font-semibold text-stone-950">The Declaration</p>
+              <p className="mt-2">
+                {active.declaration.type && (
+                  <span className="mr-2 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
+                    {active.declaration.type.replace('_', ' ')}
+                  </span>
+                )}
+                {active.declaration.description || 'Not set yet.'}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+              <p className="text-sm font-semibold text-stone-950">The Blow-Up</p>
+              <p className="mt-2">
+                {active.blow_up.type && (
+                  <span className="mr-2 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
+                    {active.blow_up.type}
+                  </span>
+                )}
+                {active.blow_up.description || 'Not set yet.'}
+              </p>
+              {active.blow_up.telegraphed_by && (
+                <p className="mt-2"><strong>Telegraphed by:</strong> {active.blow_up.telegraphed_by}</p>
+              )}
+              {active.blow_up.why_talking_cannot_fix_it && (
+                <p className="mt-2"><strong>Why talking can't fix it:</strong> {active.blow_up.why_talking_cannot_fix_it}</p>
+              )}
+            </div>
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+              <p className="text-sm font-semibold text-stone-950">The Payoff</p>
+              <p className="mt-2"><strong>Grand gesture:</strong> {active.grand_gesture || 'Not set yet.'}</p>
+              <p className="mt-2"><strong>Finale payoff:</strong> {active.finale_payoff}</p>
+              <p className="mt-2"><strong>Happily ever after:</strong> {active.happily_ever_after || 'Not set yet.'}</p>
             </div>
             <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
               <p className="text-sm font-semibold text-stone-950">Escalation path</p>
@@ -156,7 +235,7 @@ export function PremiseCard({ premise, isSaving = false, onSave }: PremiseCardPr
             </div>
           </div>
           <div className="mt-4 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
-            <p className="text-sm font-semibold text-stone-950">12-chapter frame</p>
+            <p className="text-sm font-semibold text-stone-950">15-chapter beat sheet</p>
             <PlannerList items={active.chapter_beats} emptyText="No chapter beats yet." />
           </div>
         </>

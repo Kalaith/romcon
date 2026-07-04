@@ -5,11 +5,18 @@
     "Focus on friction, fit, comedic engines, emotional lessons, and trope suitability.",
     "Treat this as the central romance even if the wider story includes other contenders.",
     "Identify the dominant romance lane, the central emotional question, and the external pressure most likely to test this pairing.",
+    "State the first refusal reason: the reasonable, adult conclusion the point-of-view lead would draw about why this romance cannot happen. Make the gap between the leads real and imposing (station, allegiance, circumstance, stakes), never a flimsy excuse or a personality flaw.",
+    "State what each lead sees in the other that nobody else does: the way this specific person makes the other feel completely seen and worthy of love.",
     "Assume default POV discipline is single close third person unless the wider plan later overrides it.",
     "Return planning analysis, not scenes or prose."
   ],
   "schema_hint": {
     "pairing_hook": "string",
+    "first_refusal_reason": "string",
+    "what_each_sees_in_the_other": {
+      "lead_one": "string",
+      "lead_two": "string"
+    },
     "why_they_clash": ["string"],
     "why_they_fit": ["string"],
     "scene_engines": ["string"],

@@ -8,12 +8,21 @@
     "Return exactly 15 chapter beats so the downstream chapter plan maps one beat to one chapter.",
     "Assume a nominal target of roughly 3,000 words per chapter even if actual drafted chapters may land closer to 2,000 words.",
     "This means the finished short novel will likely land in roughly the 30,000 to 45,000 word range.",
+    "Map the romance Formula onto the 15 chapters: Meet-Cute in chapter 1, First Refusal by end of chapter 1 or in chapter 2, The Problem Sticks Them Together locked in by end of chapter 2, Slow Burn across chapters 3-5, What If This Could Work in chapter 6, The Declaration in chapters 7-8, The New Baseline with its growing crack across chapters 9-10, The Blow-Up in chapter 11, It's So Over across chapters 12-13, We're So Back in chapter 14, The Deal Is Sealed and Happily Ever After in chapter 15.",
+    "Make the meet-cute memorable and rereadable: it is the scene readers return to most, and it should quietly plant why these two are perfect for each other.",
+    "Make the first refusal reason a conclusion any reasonable adult would reach, backed by a real and imposing gap between the leads.",
+    "The forced proximity device must be super-important or insurmountable, tied to the main plot, so the leads cannot simply walk away from each other.",
+    "Decide whether the Declaration lands as a false high (feelings reciprocated, everything briefly wonderful) or a false low (feelings dashed or deferred). If a false low, keep a visible ember of hope alive so readers do not give up on the romance.",
+    "Design the Blow-Up as an external threat tied to the central pressure whenever possible. Never build it on an avoidable misunderstanding: if any misunderstanding is involved, state the excellent, reinforced, telegraphed reason the leads cannot simply talk it out.",
+    "In We're So Back, the love between the leads must be a key element of overcoming the threat.",
+    "The Deal Is Sealed is the earned catharsis: name the concrete payoff moment (the big kiss, the wedding, the public declaration) sized to the requested heat level. Pull no punches.",
+    "End on a happily-ever-after glimpse: joyful, safe, together.",
     "If the story includes multiple suitors or rivals, make that explicit while preserving one clear main romance.",
     "Integrate the current supporting cast into the premise so they are structurally necessary, not ornamental.",
     "If named supporting characters are provided, use them to create pressure, help, obligation, exposure, or complications in the premise and chapter beats.",
     "Lock the premise to one dominant story lane: one main romance arc, one central external pressure, and one emotional question.",
     "State the POV rule explicitly rather than leaving it implied.",
-    "Make chapter beats escalate the relationship in earned stages rather than jumping ahead.",
+    "Make chapter beats escalate the relationship in earned stages rather than jumping ahead, and never regress earned emotional progress without a telegraphed cause.",
     "Return structural bones only, not prose."
   ],
   "schema_hint": {
@@ -25,10 +34,24 @@
       "emotional_question": "string"
     },
     "pov_rule": "string",
+    "meet_cute": "string",
+    "first_refusal_reason": "string",
     "forced_proximity_device": "string",
     "primary_obstacle": "string",
     "midpoint_shift": "string",
+    "declaration": {
+      "type": "false_high or false_low",
+      "description": "string"
+    },
+    "blow_up": {
+      "type": "extrinsic or intrinsic",
+      "description": "string",
+      "telegraphed_by": "string",
+      "why_talking_cannot_fix_it": "string"
+    },
+    "grand_gesture": "string",
     "finale_payoff": "string",
+    "happily_ever_after": "string",
     "chapter_beats": ["string"],
     "relationship_escalation_path": ["string"],
     "scene_contract": {

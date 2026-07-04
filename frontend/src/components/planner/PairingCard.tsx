@@ -36,6 +36,7 @@ export function PairingCard({ pairing, isSaving = false, onSave }: PairingCardPr
       scene_engines: [...pairing.scene_engines],
       trope_table: pairing.trope_table.map((entry) => ({ ...entry })),
       emotional_lessons: { ...pairing.emotional_lessons },
+      what_each_sees_in_the_other: { ...pairing.what_each_sees_in_the_other },
       dominant_story_lane: { ...pairing.dominant_story_lane },
       relationship_escalation_path: [...pairing.relationship_escalation_path],
       risk_notes: [...pairing.risk_notes],
@@ -75,6 +76,21 @@ export function PairingCard({ pairing, isSaving = false, onSave }: PairingCardPr
       {isEditing ? (
         <div className="space-y-4">
           <FormField label="Pairing hook" value={active.pairing_hook} onChange={(value) => updateField('pairing_hook', value)} textarea />
+          <FormField label="First refusal reason" value={active.first_refusal_reason} onChange={(value) => updateField('first_refusal_reason', value)} textarea />
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              label="What lead one sees in lead two"
+              value={active.what_each_sees_in_the_other.lead_one}
+              onChange={(value) => updateField('what_each_sees_in_the_other', { ...active.what_each_sees_in_the_other, lead_one: value })}
+              textarea
+            />
+            <FormField
+              label="What lead two sees in lead one"
+              value={active.what_each_sees_in_the_other.lead_two}
+              onChange={(value) => updateField('what_each_sees_in_the_other', { ...active.what_each_sees_in_the_other, lead_two: value })}
+              textarea
+            />
+          </div>
           <FormField label="Best trope" value={active.best_trope} onChange={(value) => updateField('best_trope', value)} />
           <div className="grid gap-4 md:grid-cols-2">
             <FormField
@@ -125,6 +141,19 @@ export function PairingCard({ pairing, isSaving = false, onSave }: PairingCardPr
       ) : (
         <>
           <p className="text-sm text-stone-700">{active.pairing_hook}</p>
+          {(active.first_refusal_reason || active.what_each_sees_in_the_other.lead_one || active.what_each_sees_in_the_other.lead_two) && (
+            <div className="mt-4 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+              {active.first_refusal_reason && (
+                <p><strong>First refusal:</strong> {active.first_refusal_reason}</p>
+              )}
+              {active.what_each_sees_in_the_other.lead_one && (
+                <p className="mt-2"><strong>Lead one sees:</strong> {active.what_each_sees_in_the_other.lead_one}</p>
+              )}
+              {active.what_each_sees_in_the_other.lead_two && (
+                <p className="mt-2"><strong>Lead two sees:</strong> {active.what_each_sees_in_the_other.lead_two}</p>
+              )}
+            </div>
+          )}
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm font-semibold text-stone-950">Clash</p>

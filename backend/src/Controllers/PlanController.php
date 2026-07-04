@@ -236,6 +236,8 @@ final class PlanController extends BaseController
 
         return [
             'pairing_hook' => $pairing['pairing_hook'] ?? '',
+            'first_refusal_reason' => $pairing['first_refusal_reason'] ?? '',
+            'what_each_sees_in_the_other' => $pairing['what_each_sees_in_the_other'] ?? null,
             'selected_trope' => $selectedTrope,
             'why_they_clash' => $pairing['why_they_clash'] ?? [],
             'why_they_fit' => $pairing['why_they_fit'] ?? [],
@@ -254,10 +256,16 @@ final class PlanController extends BaseController
         return [
             'logline' => $premise['logline'] ?? '',
             'premise' => $premise['premise'] ?? '',
+            'meet_cute' => $premise['meet_cute'] ?? '',
+            'first_refusal_reason' => $premise['first_refusal_reason'] ?? '',
             'forced_proximity_device' => $premise['forced_proximity_device'] ?? '',
             'primary_obstacle' => $premise['primary_obstacle'] ?? '',
             'midpoint_shift' => $premise['midpoint_shift'] ?? '',
+            'declaration' => $premise['declaration'] ?? null,
+            'blow_up' => $premise['blow_up'] ?? null,
+            'grand_gesture' => $premise['grand_gesture'] ?? '',
             'finale_payoff' => $premise['finale_payoff'] ?? '',
+            'happily_ever_after' => $premise['happily_ever_after'] ?? '',
             'chapter_beats' => $premise['chapter_beats'] ?? [],
             'recurring_comedic_motif' => $premise['recurring_comedic_motif'] ?? '',
         ];

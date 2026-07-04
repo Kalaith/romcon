@@ -35,6 +35,7 @@ const normalizePairing = (pairing?: Partial<PairingResult> | null): PairingResul
     scene_engines: Array.isArray(pairing.scene_engines) ? pairing.scene_engines : base.scene_engines,
     trope_table: Array.isArray(pairing.trope_table) ? pairing.trope_table : base.trope_table,
     emotional_lessons: { ...base.emotional_lessons, ...(pairing.emotional_lessons ?? {}) },
+    what_each_sees_in_the_other: { ...base.what_each_sees_in_the_other, ...(pairing.what_each_sees_in_the_other ?? {}) },
     dominant_story_lane: { ...base.dominant_story_lane, ...(pairing.dominant_story_lane ?? {}) },
     relationship_escalation_path: Array.isArray(pairing.relationship_escalation_path)
       ? pairing.relationship_escalation_path
@@ -53,6 +54,8 @@ const normalizePremise = (premise?: Partial<PremiseResult> | null): PremiseResul
     ...base,
     ...premise,
     dominant_story_lane: { ...base.dominant_story_lane, ...(premise.dominant_story_lane ?? {}) },
+    declaration: { ...base.declaration, ...(premise.declaration ?? {}) },
+    blow_up: { ...base.blow_up, ...(premise.blow_up ?? {}) },
     chapter_beats: Array.isArray(premise.chapter_beats) ? premise.chapter_beats : base.chapter_beats,
     relationship_escalation_path: Array.isArray(premise.relationship_escalation_path)
       ? premise.relationship_escalation_path

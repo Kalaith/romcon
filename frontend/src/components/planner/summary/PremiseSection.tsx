@@ -20,6 +20,12 @@ export function PremiseSection({ plan }: PremiseSectionProps) {
               <SummaryField label="Premise" value={plan.premise.premise} />
             </div>
             <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField label="Meet-Cute" value={plan.premise.meet_cute} />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField label="First Refusal Reason" value={plan.premise.first_refusal_reason} />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
               <SummaryField label="Forced Proximity Device" value={plan.premise.forced_proximity_device} />
             </div>
             <div className="rounded-[1.5rem] bg-white/85 p-5">
@@ -29,7 +35,25 @@ export function PremiseSection({ plan }: PremiseSectionProps) {
               <SummaryField label="Midpoint Shift" value={plan.premise.midpoint_shift} />
             </div>
             <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField
+                label={`The Declaration${plan.premise.declaration.type ? ` (${plan.premise.declaration.type.replace('_', ' ')})` : ''}`}
+                value={plan.premise.declaration.description}
+              />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField
+                label={`The Blow-Up${plan.premise.blow_up.type ? ` (${plan.premise.blow_up.type})` : ''}`}
+                value={plan.premise.blow_up.description}
+              />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField label="Grand Gesture" value={plan.premise.grand_gesture} />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
               <SummaryField label="Finale Payoff" value={plan.premise.finale_payoff} />
+            </div>
+            <div className="rounded-[1.5rem] bg-white/85 p-5">
+              <SummaryField label="Happily Ever After" value={plan.premise.happily_ever_after} />
             </div>
           </div>
 
