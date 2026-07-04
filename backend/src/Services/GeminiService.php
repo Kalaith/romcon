@@ -36,6 +36,10 @@ final class GeminiService
         $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
     }
 
+    private const MAX_ATTEMPTS = 3;
+    private const RETRYABLE_HTTP_CODES = [429, 500, 502, 503, 504];
+    private const RETRY_DELAYS_MS = [1500, 4000];
+
     public function generateJson(string $taskPrompt, array $schemaHint): array
     {
         $prompt = trim(
@@ -47,6 +51,26 @@ final class GeminiService
             json_encode($schemaHint, JSON_PRETTY_PRINT)
         );
 
+        $lastException = null;
+
+        for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
+            try {
+                return $this->attemptGenerateJson($prompt);
+            } catch (RetryableGenerationException $exception) {
+                $lastException = $exception;
+                if ($attempt < self::MAX_ATTEMPTS) {
+                    usleep((self::RETRY_DELAYS_MS[$attempt - 1] ?? 4000) * 1000);
+                }
+            }
+        }
+
+        throw new RuntimeException(
+            'Gemini request failed after ' . self::MAX_ATTEMPTS . ' attempts: ' . $lastException?->getMessage()
+        );
+    }
+
+    private function attemptGenerateJson(string $prompt): array
+    {
         $payload = [
             'contents' => [[
                 'parts' => [[
@@ -77,7 +101,11 @@ final class GeminiService
         curl_close($ch);
 
         if ($response === false) {
-            throw new RuntimeException("CURL Error ({$errno}): {$error}");
+            throw new RetryableGenerationException("CURL Error ({$errno}): {$error}");
+        }
+
+        if (in_array($httpCode, self::RETRYABLE_HTTP_CODES, true)) {
+            throw new RetryableGenerationException("Gemini request failed (HTTP {$httpCode}): {$response}");
         }
 
         if ($httpCode !== 200) {
@@ -89,7 +117,7 @@ final class GeminiService
         $decoded = json_decode($content, true);
 
         if (!is_array($decoded)) {
-            throw new RuntimeException('Gemini did not return valid JSON');
+            throw new RetryableGenerationException('Gemini did not return valid JSON');
         }
 
         return $decoded;

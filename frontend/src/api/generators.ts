@@ -1,5 +1,5 @@
 import api from './client';
-import type { CastMember, CharacterPack, DraftChapter, PairingResult, Plan, PremiseResult } from '../types';
+import type { BeatAuditResult, CastMember, CharacterPack, DraftChapter, PairingResult, Plan, PremiseResult } from '../types';
 
 export const generatorApi = {
   async concept(payload: {
@@ -226,6 +226,19 @@ export const generatorApi = {
   }): Promise<CastMember> {
     const response = await api.post('/generate/cast-member', payload);
     return response.data.data as CastMember;
+  },
+
+  async beatAudit(payload: {
+    heat_level: string;
+    romance_configuration: string;
+    lead_one: CharacterPack | null;
+    lead_two: CharacterPack | null;
+    pairing: PairingResult | null;
+    premise: PremiseResult;
+    chapter_details: Plan['chapter_details'];
+  }): Promise<BeatAuditResult> {
+    const response = await api.post('/generate/beat-audit', payload);
+    return response.data.data as BeatAuditResult;
   },
 
   async premise(payload: {

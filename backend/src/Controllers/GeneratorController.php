@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Actions\GenerateBeatAuditAction;
 use App\Actions\GenerateCharacterPackAction;
 use App\Actions\GenerateConceptAction;
 use App\Actions\GenerateChapterDetailsAction;
@@ -154,6 +155,19 @@ final class GeneratorController extends BaseController
         try {
             $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
             $action = new GenerateChapterDraftAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+
+            return $this->success($response, $result);
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
+    public function beatAudit(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new GenerateBeatAuditAction();
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
 
             return $this->success($response, $result);

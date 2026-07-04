@@ -1,5 +1,7 @@
-import type { CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../../types';
+import type { ActiveGeneration } from '../../hooks/usePlannerWorkspace';
+import type { BeatAuditResult, CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../../types';
 import { workflowSteps } from './constants';
+import { BeatAuditPanel } from './BeatAuditPanel';
 import { ChapterDetailsCard } from './ChapterDetailsCard';
 import { CharacterCard } from './CharacterCard';
 import { ConceptBoard } from './ConceptBoard';
@@ -21,7 +23,7 @@ type StoryPlannerViewProps = {
   hasPremise: boolean;
   hasChapterDetails: boolean;
   isGenerating: boolean;
-  activeGeneration: 'concept' | 'concept_expand' | 'concept_polish' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | 'cast_member' | 'chapter_draft' | null;
+  activeGeneration: ActiveGeneration;
   isSaving: boolean;
   plannerMessage: string | null;
   plannerError: string | null;
@@ -48,6 +50,8 @@ type StoryPlannerViewProps = {
   onSaveEditedPairing: (pairing: NonNullable<Plan['pairing']>) => Promise<void>;
   onSaveEditedPremise: (premise: NonNullable<Plan['premise']>) => Promise<void>;
   onSaveChapterDetails: (chapterDetails: Plan['chapter_details']) => Promise<void>;
+  beatAudit: BeatAuditResult | null;
+  onRunBeatAudit: () => void;
   onGenerateMemberFromPrompt: (prompt: string) => Promise<CastMember>;
   onSaveEditedCast: (cast: Plan['cast']) => Promise<void>;
   onCreateLibraryEntry: (member: CastMember) => Promise<void>;
@@ -96,6 +100,8 @@ export function StoryPlannerView({
   onSaveEditedPairing,
   onSaveEditedPremise,
   onSaveChapterDetails,
+  beatAudit,
+  onRunBeatAudit,
   onGenerateMemberFromPrompt,
   onSaveEditedCast,
   onCreateLibraryEntry,
@@ -322,16 +328,24 @@ export function StoryPlannerView({
         } : undefined)}
       >
         {hasPremise ? (
-          <ChapterDetailsCard
-            chapterDetails={currentPlan.chapter_details}
-            premise={currentPlan.premise}
-            targetWords={currentPlan.target_words}
-            isGenerating={activeGeneration === 'chapters'}
-            generateButtonLabel={hasChapterDetails ? 'Regenerate Chapter Details' : 'Generate Chapter Details'}
-            isSaving={isSaving}
-            onGenerate={onGenerateChapterDetails}
-            onSave={onSaveChapterDetails}
-          />
+          <div className="space-y-6">
+            <ChapterDetailsCard
+              chapterDetails={currentPlan.chapter_details}
+              premise={currentPlan.premise}
+              targetWords={currentPlan.target_words}
+              isGenerating={activeGeneration === 'chapters'}
+              generateButtonLabel={hasChapterDetails ? 'Regenerate Chapter Details' : 'Generate Chapter Details'}
+              isSaving={isSaving}
+              onGenerate={onGenerateChapterDetails}
+              onSave={onSaveChapterDetails}
+            />
+            <BeatAuditPanel
+              audit={beatAudit}
+              isAuditing={activeGeneration === 'beat_audit'}
+              disabled={isGenerating && activeGeneration !== 'beat_audit'}
+              onRunAudit={onRunBeatAudit}
+            />
+          </div>
         ) : (
           <p className="text-sm text-rose-800/70">Chapter planning opens once the premise and chapter-beat frame exist.</p>
         )}

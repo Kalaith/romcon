@@ -10,11 +10,11 @@ import { normalizeHeatLevel } from '../constants/heatLevels';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlannerStore } from '../stores/usePlannerStore';
 import { DraftChapter } from '../types';
-import type { CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../types';
+import type { BeatAuditResult, CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../types';
 
 export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary' | 'drafts';
 export type PendingRegeneration = 'concept' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | null;
-export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | 'chapter_draft' | null;
+export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | 'chapter_draft' | 'beat_audit' | null;
 
 const regenerationModalCopy: Record<Exclude<PendingRegeneration, null>, { title: string; body: string; confirmLabel: string }> = {
   concept: {
@@ -82,6 +82,7 @@ export function usePlannerWorkspace() {
   const [writerProfileMessage, setWriterProfileMessage] = useState<string | null>(null);
   const [writerProfileError, setWriterProfileError] = useState<string | null>(null);
   const [pendingRegeneration, setPendingRegeneration] = useState<PendingRegeneration>(null);
+  const [beatAudit, setBeatAudit] = useState<BeatAuditResult | null>(null);
 
   const hasLeads = Boolean(currentPlan.lead_one && currentPlan.lead_two);
   const hasConcept = Boolean(
@@ -661,6 +662,37 @@ export function usePlannerWorkspace() {
     }, setPlannerError, 'chapters');
   };
 
+  const runBeatAudit = async () => {
+    const premise = currentPlan.premise;
+    if (!premise) {
+      setPlannerError('Generate the premise first.');
+      return;
+    }
+
+    await runTask(
+      async () => {
+        setBeatAudit(null);
+        const result = await generatorApi.beatAudit({
+          heat_level: currentPlan.heat_level,
+          romance_configuration: currentPlan.romance_configuration,
+          lead_one: currentPlan.lead_one,
+          lead_two: currentPlan.lead_two,
+          pairing: currentPlan.pairing,
+          premise,
+          chapter_details: currentPlan.chapter_details,
+        });
+        setBeatAudit(result);
+        setPlannerMessage(
+          result.verdict === 'pass'
+            ? 'Beat audit passed. The plan holds up against the Formula.'
+            : `Beat audit found ${result.flags.length} issue${result.flags.length === 1 ? '' : 's'} to review.`
+        );
+      },
+      setPlannerError,
+      'beat_audit'
+    );
+  };
+
   const generateCastMemberFromPrompt = async (prompt: string): Promise<CastMember> => {
     let generatedMember: CastMember | null = null;
 
@@ -878,6 +910,8 @@ export function usePlannerWorkspace() {
     cancelRegeneration,
     generateCastMemberFromPrompt,
     generateChapterDraft,
+    beatAudit,
+    runBeatAudit,
     deletePlan,
     replacePlan,
     resetPlan,

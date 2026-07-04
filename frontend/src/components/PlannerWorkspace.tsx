@@ -200,6 +200,8 @@ export function PlannerWorkspace() {
               onSaveEditedPairing={workspace.saveEditedPairing}
               onSaveEditedPremise={workspace.saveEditedPremise}
               onSaveChapterDetails={workspace.saveChapterDetails}
+              beatAudit={workspace.beatAudit}
+              onRunBeatAudit={() => void workspace.runBeatAudit()}
               onGenerateMemberFromPrompt={workspace.generateCastMemberFromPrompt}
               onSaveEditedCast={workspace.saveEditedCast}
               onCreateLibraryEntry={workspace.createLibraryEntry}

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { ActiveGeneration } from '../../hooks/usePlannerWorkspace';
 import type { FlavorSeed, Plan, Trope } from '../../types';
 import { getAllowedHeatLevels, getHeatLevelMeta } from '../../constants/heatLevels';
 import { TropeTable } from '../TropeTable';
@@ -9,7 +10,7 @@ type ConceptBoardProps = {
   flavorSeeds: FlavorSeed[];
   tropes: Trope[];
   isGenerating: boolean;
-  activeGeneration: 'concept' | 'concept_expand' | 'concept_polish' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | 'cast_member' | 'chapter_draft' | null;
+  activeGeneration: ActiveGeneration;
   message: string | null;
   error: string | null;
   conceptExpandButtonLabel: string;

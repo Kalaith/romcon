@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Services\RomanceFormula;
 use App\Services\RomconPromptBuilder;
 
 final class GenerateChapterDetailsAction extends PromptAction
@@ -33,10 +34,7 @@ final class GenerateChapterDetailsAction extends PromptAction
 
         $promptBuilder = new RomconPromptBuilder();
 
-        return $this->generatePlanningJson(
-            'generate_chapter_details',
-            $userId,
-            $promptBuilder->compactLines(
+        $contextLines = $promptBuilder->compactLines(
                 "Target words: {$targetWords}",
                 $promptBuilder->heatLevelLine($heatLevel),
                 "Core romance configuration: {$romanceConfiguration}",
@@ -53,7 +51,51 @@ final class GenerateChapterDetailsAction extends PromptAction
                 'Premise: ' . json_encode($premise, JSON_PRETTY_PRINT),
                 $cast !== [] ? 'Current supporting cast: ' . json_encode($cast, JSON_PRETTY_PRINT) : '',
                 $flavorSeeds !== [] ? 'Flavor sources: ' . implode(', ', $flavorSeeds) : ''
-            )
         );
+
+        $result = $this->generatePlanningJson('generate_chapter_details', $userId, $contextLines);
+        if (!$this->hasValidChapterCount($result)) {
+            $result = $this->generatePlanningJson('generate_chapter_details', $userId, $contextLines);
+        }
+
+        if (!$this->hasValidChapterCount($result)) {
+            $count = is_array($result['chapter_details'] ?? null) ? count($result['chapter_details']) : 0;
+            throw new \RuntimeException(
+                "Chapter planning returned {$count} chapters instead of " . RomanceFormula::CHAPTER_COUNT . '. Please try again.'
+            );
+        }
+
+        $result['chapter_details'] = $this->normalizeChapters($result['chapter_details']);
+
+        return $result;
+    }
+
+    private function hasValidChapterCount(array $result): bool
+    {
+        return is_array($result['chapter_details'] ?? null)
+            && count($result['chapter_details']) === RomanceFormula::CHAPTER_COUNT;
+    }
+
+    /**
+     * @param list<mixed> $chapters
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeChapters(array $chapters): array
+    {
+        $chapters = array_values(array_filter($chapters, 'is_array'));
+        usort($chapters, static fn (array $left, array $right): int =>
+            ((int) ($left['chapter_number'] ?? 0)) <=> ((int) ($right['chapter_number'] ?? 0)));
+
+        foreach ($chapters as $index => $chapter) {
+            $chapterNumber = $index + 1;
+            $chapter['chapter_number'] = $chapterNumber;
+            if (trim((string) ($chapter['formula_beat'] ?? '')) === '') {
+                $chapter['formula_beat'] = RomanceFormula::beatForChapter($chapterNumber);
+            }
+            $chapter['approximate_word_target'] = max(500, (int) ($chapter['approximate_word_target'] ?? 3000));
+            $chapters[$index] = $chapter;
+        }
+
+        return $chapters;
     }
 }

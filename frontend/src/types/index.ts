@@ -93,6 +93,20 @@ export class ChapterDetail {
   approximate_word_target = 3000;
 }
 
+export type BeatAuditFlag = {
+  beat: string;
+  chapter_reference: string;
+  severity: string;
+  issue: string;
+  suggested_fix: string;
+};
+
+export class BeatAuditResult {
+  verdict = '';
+  overall_note = '';
+  flags: BeatAuditFlag[] = [];
+}
+
 export class DraftChapter {
   chapter_number = 1;
   chapter_title = '';

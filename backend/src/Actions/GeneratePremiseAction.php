@@ -32,10 +32,7 @@ final class GeneratePremiseAction extends PromptAction
 
         $promptBuilder = new RomconPromptBuilder();
 
-        return $this->generatePlanningJson(
-            'generate_premise',
-            $userId,
-            $promptBuilder->compactLines(
+        $contextLines = $promptBuilder->compactLines(
                 "Target words: {$targetWords}",
                 $promptBuilder->heatLevelLine($heatLevel),
                 "Core romance configuration: {$romanceConfiguration}",
@@ -51,7 +48,26 @@ final class GeneratePremiseAction extends PromptAction
                 'Pairing analysis: ' . json_encode($pairing, JSON_PRETTY_PRINT),
                 $cast !== [] ? 'Current supporting cast: ' . json_encode($cast, JSON_PRETTY_PRINT) : '',
                 $flavorSeeds !== [] ? 'Flavor sources: ' . implode(', ', $flavorSeeds) : ''
-            )
         );
+
+        $result = $this->generatePlanningJson('generate_premise', $userId, $contextLines);
+        if (!$this->hasValidBeatCount($result)) {
+            $result = $this->generatePlanningJson('generate_premise', $userId, $contextLines);
+        }
+
+        if (!$this->hasValidBeatCount($result)) {
+            $count = is_array($result['chapter_beats'] ?? null) ? count($result['chapter_beats']) : 0;
+            throw new \RuntimeException(
+                "Premise generation returned {$count} chapter beats instead of " . \App\Services\RomanceFormula::CHAPTER_COUNT . '. Please try again.'
+            );
+        }
+
+        return $result;
+    }
+
+    private function hasValidBeatCount(array $result): bool
+    {
+        return is_array($result['chapter_beats'] ?? null)
+            && count($result['chapter_beats']) === \App\Services\RomanceFormula::CHAPTER_COUNT;
     }
 }

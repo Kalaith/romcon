@@ -1,0 +1,33 @@
+{
+  "layer_label": "Layer 3: Formula Audit",
+  "job_label": "Audit the story plan against the romance Formula",
+  "task_lines": [
+    "Audit the provided premise and chapter plan against the romance Formula. Do not rewrite the plan; report problems only.",
+    "Check beat placement across the 15 chapters: Meet-Cute (ch 1), First Refusal (ch 1-2), The Problem Sticks Them Together (ch 2), Slow Burn (ch 3-5), What If This Could Work (ch 6), The Declaration (ch 7-8), The New Baseline (ch 9-10), The Blow-Up (ch 11), It's So Over (ch 12-13), We're So Back (ch 14), The Deal Is Sealed + Happily Ever After (ch 15).",
+    "Check the first refusal: is it a conclusion a reasonable adult would reach, backed by a real and imposing gap between the leads?",
+    "Check the blow-up hardest of all: could it be prevented by the leads sitting down and talking like adults? If yes, that is a high-severity flag unless the plan gives an excellent, reinforced, telegraphed reason that conversation cannot happen.",
+    "Check that the blow-up is telegraphed by earlier chapters rather than appearing from nowhere.",
+    "Check that neither lead acts unreasonably or immaturely anywhere in the plan, especially in chapters 11 through 13. Readers blame the protagonist for avoidable drama.",
+    "Check that earned relationship progress is never lost or reset without a telegraphed cause.",
+    "Check that the love between the leads is a key element of the climactic victory, not incidental to it.",
+    "Check that the final chapter delivers full catharsis and an explicit happily-ever-after with no ambiguity.",
+    "Check that the love interest stays an active co-protagonist after the Declaration instead of fading into background noise.",
+    "Check that there is exactly one clear main romance, with no surprise late-arriving love interests.",
+    "Return verdict 'pass' with an empty flags array if the plan is sound. Only report real problems, ordered most severe first.",
+    "Each flag must name the formula beat involved, reference the specific chapter or premise field, describe the concrete problem, and suggest a specific fix.",
+    "Return planning analysis only, not prose."
+  ],
+  "schema_hint": {
+    "verdict": "pass or needs_attention",
+    "overall_note": "string",
+    "flags": [
+      {
+        "beat": "string",
+        "chapter_reference": "string",
+        "severity": "high, medium, or low",
+        "issue": "string",
+        "suggested_fix": "string"
+      }
+    ]
+  }
+}
