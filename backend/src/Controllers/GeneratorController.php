@@ -13,9 +13,11 @@ use App\Actions\GenerateCastAction;
 use App\Actions\GenerateCastMemberAction;
 use App\Actions\GeneratePairingAction;
 use App\Actions\GeneratePremiseAction;
+use App\Actions\GenerateShortScriptAction;
 use App\Actions\ExpandConceptAction;
 use App\Actions\PolishConceptAction;
 use App\Models\Plan;
+use App\Models\Short;
 use App\Services\CharacterLibrarySyncService;
 use App\Services\HeatLevelPolicy;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -171,6 +173,32 @@ final class GeneratorController extends BaseController
             $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
 
             return $this->success($response, $result);
+        } catch (\Throwable $exception) {
+            return $this->error($response, $exception->getMessage(), 422);
+        }
+    }
+
+    public function shortScript(Request $request, Response $response): Response
+    {
+        try {
+            $payload = $this->normalizeHeatLevelPayload($request, $this->getRequestData($request));
+            $action = new GenerateShortScriptAction();
+            $result = $action->execute($payload, (string) $request->getAttribute('user_id'));
+
+            $short = new Short();
+            $short->created_by = (string) $request->getAttribute('user_id');
+            $short->title = (string) ($result['title'] ?? 'Untitled Short');
+            $short->brief = trim((string) ($payload['brief'] ?? ''));
+            $short->setting = trim((string) ($payload['setting'] ?? ''));
+            $short->trope = trim((string) ($payload['trope'] ?? ($result['trope'] ?? '')));
+            $short->heat_level = (string) ($payload['heat_level'] ?? 'sweet');
+            $short->script_json = (string) json_encode($result);
+            $now = date('Y-m-d H:i:s');
+            $short->created_at = $now;
+            $short->updated_at = $now;
+            $short->save();
+
+            return $this->success($response, $short->toApiArray());
         } catch (\Throwable $exception) {
             return $this->error($response, $exception->getMessage(), 422);
         }

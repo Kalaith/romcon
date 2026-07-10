@@ -116,6 +116,29 @@ export class DraftChapter {
   updated_at = '';
 }
 
+export type ShortScriptSegment = {
+  beat: string;
+  time_range: string;
+  narration: string;
+  on_screen_text: string;
+};
+
+export class ShortScript {
+  id?: number;
+  title = '';
+  hook = '';
+  logline = '';
+  trope = '';
+  brief = '';
+  setting = '';
+  heat_level = 'sweet';
+  segments: ShortScriptSegment[] = [];
+  call_to_action = '';
+  estimated_duration_seconds = 120;
+  word_count = 0;
+  created_at = '';
+}
+
 export class CastMember {
   name = '';
   role = '';

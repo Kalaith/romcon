@@ -47,6 +47,22 @@ CREATE TABLE IF NOT EXISTS plans (
     INDEX idx_plans_created_by_updated_at (created_by, updated_at)
 );
 
+-- Standalone bite-sized YouTube Shorts scripts. Independent of plans:
+-- a short keeps its own seed inputs plus the generated script payload.
+CREATE TABLE IF NOT EXISTS shorts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    created_by VARCHAR(191) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    brief TEXT NULL,
+    setting VARCHAR(255) NULL,
+    trope VARCHAR(120) NULL,
+    heat_level VARCHAR(40) NOT NULL DEFAULT 'sweet',
+    script_json LONGTEXT NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    INDEX idx_shorts_created_by (created_by)
+);
+
 -- User-owned inspiration/flavor seeds used in planning prompts.
 CREATE TABLE IF NOT EXISTS flavor_seeds (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

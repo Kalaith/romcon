@@ -92,6 +92,20 @@ if ($schema->hasTable('plans') && !$schema->hasColumn('plans', 'draft_chapters_j
         $table->longText('draft_chapters_json')->nullable()->after('chapter_details_json');
     });
 }
+if (!$schema->hasTable('shorts')) {
+    $schema->create('shorts', static function ($table): void {
+        $table->increments('id');
+        $table->string('created_by', 191)->index();
+        $table->string('title', 255);
+        $table->text('brief')->nullable();
+        $table->string('setting', 255)->nullable();
+        $table->string('trope', 120)->nullable();
+        $table->string('heat_level', 40)->default('sweet');
+        $table->longText('script_json');
+        $table->dateTime('created_at');
+        $table->dateTime('updated_at');
+    });
+}
 
 $app = AppFactory::create();
 

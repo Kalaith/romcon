@@ -5,6 +5,7 @@ import { ProjectSidebar } from './ProjectSidebar';
 import { CastWorkspace } from './planner/CastWorkspace';
 import { ConfirmRegenerateModal } from './planner/ConfirmRegenerateModal';
 import { DraftWorkspace } from './planner/DraftWorkspace';
+import { ShortsWorkspace } from './planner/ShortsWorkspace';
 import { StoryPlannerView } from './planner/StoryPlannerView';
 import { SummaryWorkspace } from './planner/SummaryWorkspace';
 import { WorkflowSteps } from './planner/WorkflowSteps';
@@ -86,6 +87,9 @@ export function PlannerWorkspace() {
             </button>
             <button className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'drafts' ? 'bg-rose-600 text-white' : 'text-stone-700'}`} onClick={() => workspace.setActiveView('drafts')}>
               Draft Studio
+            </button>
+            <button className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'shorts' ? 'bg-rose-600 text-white' : 'text-stone-700'}`} onClick={() => workspace.setActiveView('shorts')}>
+              Shorts
             </button>
             <button
               className={`rounded-full px-4 py-2 text-sm font-semibold ${workspace.activeView === 'writer_profile' ? 'bg-rose-600 text-white' : 'text-stone-700'}`}
@@ -238,6 +242,16 @@ export function PlannerWorkspace() {
               error={workspace.draftError}
               onGenerateChapterDraft={workspace.generateChapterDraft}
               onSaveDraftChapters={workspace.saveEditedDraftChapters}
+            />
+          ) : workspace.activeView === 'shorts' ? (
+            <ShortsWorkspace
+              shorts={workspace.shorts}
+              isGenerating={workspace.activeGeneration === 'short_script'}
+              isGuestUser={Boolean(workspace.user?.is_guest)}
+              message={workspace.shortsMessage}
+              error={workspace.shortsError}
+              onGenerateShort={workspace.generateShortScript}
+              onDeleteShort={workspace.deleteShortScript}
             />
           ) : workspace.activeView === 'summary' ? (
             <SummaryWorkspace plan={workspace.currentPlan} onBackToPlanner={() => workspace.setActiveView('planner')} onExport={(format) => void workspace.handleExport(format)} />

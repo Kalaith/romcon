@@ -1,5 +1,5 @@
 import api from './client';
-import type { BeatAuditResult, CastMember, CharacterPack, DraftChapter, PairingResult, Plan, PremiseResult } from '../types';
+import type { BeatAuditResult, CastMember, CharacterPack, DraftChapter, PairingResult, Plan, PremiseResult, ShortScript } from '../types';
 
 export const generatorApi = {
   async concept(payload: {
@@ -239,6 +239,17 @@ export const generatorApi = {
   }): Promise<BeatAuditResult> {
     const response = await api.post('/generate/beat-audit', payload);
     return response.data.data as BeatAuditResult;
+  },
+
+  async shortScript(payload: {
+    brief: string;
+    setting: string;
+    trope: string;
+    extra_direction: string;
+    heat_level: string;
+  }): Promise<ShortScript> {
+    const response = await api.post('/generate/short-script', payload);
+    return response.data.data as ShortScript;
   },
 
   async premise(payload: {

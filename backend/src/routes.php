@@ -7,6 +7,7 @@ use App\Controllers\CharacterLibraryController;
 use App\Controllers\FlavorSeedController;
 use App\Controllers\GeneratorController;
 use App\Controllers\PlanController;
+use App\Controllers\ShortController;
 use App\Controllers\TropeController;
 use App\Controllers\WriterProfileController;
 use App\Middleware\JwtAuthMiddleware;
@@ -68,6 +69,11 @@ return function (App $app) {
         $plans->delete('/{id}', [PlanController::class, 'delete']);
     })->add(new JwtAuthMiddleware());
 
+    $app->group('/shorts', function (RouteCollectorProxy $shorts) {
+        $shorts->get('', [ShortController::class, 'index']);
+        $shorts->delete('/{id}', [ShortController::class, 'delete']);
+    })->add(new JwtAuthMiddleware());
+
     $app->group('/generate', function (RouteCollectorProxy $generate) {
         $generate->post('/concept', [GeneratorController::class, 'concept']);
         $generate->post('/concept-expand', [GeneratorController::class, 'expandConcept']);
@@ -80,5 +86,6 @@ return function (App $app) {
         $generate->post('/pairing', [GeneratorController::class, 'pairing']);
         $generate->post('/premise', [GeneratorController::class, 'premise']);
         $generate->post('/beat-audit', [GeneratorController::class, 'beatAudit']);
+        $generate->post('/short-script', [GeneratorController::class, 'shortScript']);
     })->add(new JwtAuthMiddleware());
 };

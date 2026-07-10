@@ -4,17 +4,18 @@ import { characterLibraryApi } from '../api/characterLibrary';
 import { exportPlan } from '../api/export';
 import { flavorSeedApi } from '../api/flavorSeeds';
 import { generatorApi } from '../api/generators';
+import { shortsApi } from '../api/shorts';
 import { writerProfileApi } from '../api/writerProfile';
 import type { WriterProfilePayload } from '../api/writerProfile';
 import { normalizeHeatLevel } from '../constants/heatLevels';
 import { useAuth } from '../contexts/AuthContext';
 import { usePlannerStore } from '../stores/usePlannerStore';
 import { DraftChapter } from '../types';
-import type { BeatAuditResult, CastMember, CharacterLibraryEntry, FlavorSeed, Plan, Trope } from '../types';
+import type { BeatAuditResult, CastMember, CharacterLibraryEntry, FlavorSeed, Plan, ShortScript, Trope } from '../types';
 
-export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary' | 'drafts';
+export type WorkspaceView = 'planner' | 'cast' | 'writer_profile' | 'summary' | 'drafts' | 'shorts';
 export type PendingRegeneration = 'concept' | 'characters' | 'pairing' | 'premise' | 'chapters' | 'cast' | null;
-export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | 'chapter_draft' | 'beat_audit' | null;
+export type ActiveGeneration = Exclude<PendingRegeneration, null> | 'concept_expand' | 'concept_polish' | 'cast_member' | 'chapter_draft' | 'beat_audit' | 'short_script' | null;
 
 const regenerationModalCopy: Record<Exclude<PendingRegeneration, null>, { title: string; body: string; confirmLabel: string }> = {
   concept: {
@@ -79,6 +80,9 @@ export function usePlannerWorkspace() {
   const [castError, setCastError] = useState<string | null>(null);
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
+  const [shorts, setShorts] = useState<ShortScript[]>([]);
+  const [shortsMessage, setShortsMessage] = useState<string | null>(null);
+  const [shortsError, setShortsError] = useState<string | null>(null);
   const [writerProfileMessage, setWriterProfileMessage] = useState<string | null>(null);
   const [writerProfileError, setWriterProfileError] = useState<string | null>(null);
   const [pendingRegeneration, setPendingRegeneration] = useState<PendingRegeneration>(null);
@@ -121,6 +125,7 @@ export function usePlannerWorkspace() {
     void flavorSeedApi.list().then(setFlavorSeeds);
     void characterLibraryApi.list().then(setLibraryEntries);
     void writerProfileApi.get().then(setWriterProfile);
+    void shortsApi.list().then(setShorts).catch(() => setShorts([]));
     void loadProjects();
   }, [loadProjects]);
 
@@ -306,6 +311,40 @@ export function usePlannerWorkspace() {
     }
 
     return generatedDraft;
+  };
+
+  const generateShortScript = async (input: { brief: string; setting: string; trope: string; extraDirection: string; heatLevel: string }) => {
+    if (input.brief.trim() === '' && input.trope.trim() === '' && input.extraDirection.trim() === '') {
+      setShortsError('Give the short a story seed, a trope, or some direction first.');
+      return;
+    }
+
+    await runTask(
+      async () => {
+        const script = await generatorApi.shortScript({
+          brief: input.brief,
+          setting: input.setting,
+          trope: input.trope,
+          extra_direction: input.extraDirection,
+          heat_level: input.heatLevel,
+        });
+        setShorts((current) => [script, ...current]);
+        setShortsMessage(`"${script.title}" is ready: about ${script.word_count} words of narration.`);
+      },
+      setShortsError,
+      'short_script'
+    );
+  };
+
+  const deleteShortScript = async (shortId: number) => {
+    try {
+      setShortsError(null);
+      await shortsApi.remove(shortId);
+      setShorts((current) => current.filter((short) => short.id !== shortId));
+      setShortsMessage('Short deleted.');
+    } catch (taskError) {
+      setShortsError(taskError instanceof Error ? taskError.message : 'Unable to delete this short.');
+    }
   };
 
   const createLibraryEntry = async (member: CastMember) => {
@@ -841,6 +880,8 @@ export function usePlannerWorkspace() {
         ? 'Manage story-specific cast on the left side of the workspace and reusable cross-story characters on the right.'
         : activeView === 'drafts'
           ? 'Draft chapters from the saved plan here, revise them against the latest board, and read the compiled manuscript.'
+        : activeView === 'shorts'
+          ? 'Generate bite-sized romance scripts here: a full arc condensed into roughly two minutes of narration for YouTube Shorts.'
         : activeView === 'summary'
           ? 'Review the full saved story board here before exporting it into a drafting package.'
           : 'Adjust the writer voice used during generation and included in export packages.';
@@ -871,6 +912,9 @@ export function usePlannerWorkspace() {
     castError,
     draftMessage,
     draftError,
+    shorts,
+    shortsMessage,
+    shortsError,
     writerProfileMessage,
     writerProfileError,
     pendingRegeneration,
@@ -910,6 +954,8 @@ export function usePlannerWorkspace() {
     cancelRegeneration,
     generateCastMemberFromPrompt,
     generateChapterDraft,
+    generateShortScript,
+    deleteShortScript,
     beatAudit,
     runBeatAudit,
     deletePlan,
