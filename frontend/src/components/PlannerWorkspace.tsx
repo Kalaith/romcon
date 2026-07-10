@@ -248,6 +248,7 @@ export function PlannerWorkspace() {
               shorts={workspace.shorts}
               isGenerating={workspace.activeGeneration === 'short_script'}
               isGuestUser={Boolean(workspace.user?.is_guest)}
+              writerProfile={workspace.writerProfile?.effective_profile ?? null}
               message={workspace.shortsMessage}
               error={workspace.shortsError}
               onGenerateShort={workspace.generateShortScript}

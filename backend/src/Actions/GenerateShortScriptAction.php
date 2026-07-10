@@ -79,7 +79,6 @@ final class GenerateShortScriptAction extends PromptAction
         }
 
         $narratedText = implode(' ', array_merge(
-            [trim((string) ($result['hook'] ?? ''))],
             array_column($segments, 'narration'),
             [trim((string) ($result['call_to_action'] ?? ''))]
         ));
@@ -87,7 +86,7 @@ final class GenerateShortScriptAction extends PromptAction
 
         return [
             'title' => trim((string) ($result['title'] ?? 'Untitled Short')),
-            'hook' => trim((string) ($result['hook'] ?? '')),
+            'hook' => $segments[0]['narration'],
             'logline' => trim((string) ($result['logline'] ?? '')),
             'trope' => trim((string) ($result['trope'] ?? '')),
             'segments' => $segments,

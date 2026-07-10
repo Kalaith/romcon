@@ -6,6 +6,7 @@ type ShortsWorkspaceProps = {
   shorts: ShortScript[];
   isGenerating: boolean;
   isGuestUser: boolean;
+  writerProfile: string | null;
   message: string | null;
   error: string | null;
   onGenerateShort: (input: { brief: string; setting: string; trope: string; extraDirection: string; heatLevel: string }) => Promise<void>;
@@ -35,21 +36,58 @@ function buildCopyText(short: ShortScript): string {
   return lines.filter((line, index) => line !== '' || index > 0).join('\n');
 }
 
-export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, message, error, onGenerateShort, onDeleteShort }: ShortsWorkspaceProps) {
+function buildJsonPackage(short: ShortScript, writerProfile: string | null): string {
+  return JSON.stringify(
+    {
+      meta: {
+        app: 'RomCon',
+        exported_at: new Date().toISOString(),
+        short_id: short.id ?? null,
+        title: short.title,
+        heat_level: short.heat_level,
+        estimated_duration_seconds: short.estimated_duration_seconds,
+        word_count: short.word_count,
+      },
+      ai_short_video_package: {
+        instruction:
+          'Use this package to produce a roughly two minute romance YouTube Short. Preserve the hook, beat order, narration, segment timing, on-screen captions, and call to action.',
+        writer_profile: writerProfile ?? '',
+        title: short.title,
+        logline: short.logline,
+        trope: short.trope,
+        brief: short.brief,
+        setting: short.setting,
+        heat_level: short.heat_level,
+        hook: short.hook,
+        segments: short.segments,
+        call_to_action: short.call_to_action,
+        estimated_duration_seconds: short.estimated_duration_seconds,
+        word_count: short.word_count,
+      },
+    },
+    null,
+    2
+  );
+}
+
+export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, writerProfile, message, error, onGenerateShort, onDeleteShort }: ShortsWorkspaceProps) {
   const [brief, setBrief] = useState('');
   const [setting, setSetting] = useState('');
   const [trope, setTrope] = useState('');
   const [extraDirection, setExtraDirection] = useState('');
   const [heatLevel, setHeatLevel] = useState('sweet');
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copied, setCopied] = useState<{ id: number; kind: 'script' | 'json' } | null>(null);
 
   const heatOptions = getAllowedHeatLevels(isGuestUser);
   const canGenerate = brief.trim() !== '' || trope.trim() !== '' || extraDirection.trim() !== '';
 
-  const copyShort = async (short: ShortScript) => {
-    await navigator.clipboard.writeText(buildCopyText(short));
-    setCopiedId(short.id ?? null);
-    window.setTimeout(() => setCopiedId(null), 2000);
+  const copyShort = async (short: ShortScript, kind: 'script' | 'json') => {
+    const text = kind === 'json' ? buildJsonPackage(short, writerProfile) : buildCopyText(short);
+    await navigator.clipboard.writeText(text);
+    if (short.id) {
+      setCopied({ id: short.id, kind });
+      window.setTimeout(() => setCopied(null), 2000);
+    }
   };
 
   return (
@@ -193,10 +231,17 @@ export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, message, er
             <div className="mt-5 flex flex-wrap justify-end gap-3">
               <button
                 className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
-                onClick={() => void copyShort(short)}
+                onClick={() => void copyShort(short, 'script')}
                 type="button"
               >
-                {copiedId !== null && copiedId === short.id ? 'Copied!' : 'Copy script'}
+                {copied !== null && copied.id === short.id && copied.kind === 'script' ? 'Copied!' : 'Copy script'}
+              </button>
+              <button
+                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
+                onClick={() => void copyShort(short, 'json')}
+                type="button"
+              >
+                {copied !== null && copied.id === short.id && copied.kind === 'json' ? 'Copied!' : 'Copy JSON'}
               </button>
               {short.id ? (
                 <button
