@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Services\GeminiService;
 use App\Services\RomconPromptBuilder;
+use App\Services\ShortScriptNormalizer;
 
 final class GenerateShortScriptAction extends PromptAction
 {
@@ -49,51 +50,8 @@ final class GenerateShortScriptAction extends PromptAction
 
         $service = new GeminiService($userId);
         $result = $service->generateJson($prompt, is_array($definition['schema_hint'] ?? null) ? $definition['schema_hint'] : []);
+        unset($result['created_at']);
 
-        return $this->normalizeResult($result);
-    }
-
-    private function normalizeResult(array $result): array
-    {
-        $segments = [];
-        foreach (is_array($result['segments'] ?? null) ? $result['segments'] : [] as $segment) {
-            if (!is_array($segment)) {
-                continue;
-            }
-
-            $narration = trim((string) ($segment['narration'] ?? ''));
-            if ($narration === '') {
-                continue;
-            }
-
-            $segments[] = [
-                'beat' => trim((string) ($segment['beat'] ?? '')),
-                'time_range' => trim((string) ($segment['time_range'] ?? '')),
-                'narration' => $narration,
-                'on_screen_text' => trim((string) ($segment['on_screen_text'] ?? '')),
-            ];
-        }
-
-        if ($segments === []) {
-            throw new \RuntimeException('Short script generation returned no narration segments. Please try again.');
-        }
-
-        $narratedText = implode(' ', array_merge(
-            array_column($segments, 'narration'),
-            [trim((string) ($result['call_to_action'] ?? ''))]
-        ));
-        $wordCount = count(array_filter(preg_split('/\s+/', trim($narratedText)) ?: []));
-
-        return [
-            'title' => trim((string) ($result['title'] ?? 'Untitled Short')),
-            'hook' => $segments[0]['narration'],
-            'logline' => trim((string) ($result['logline'] ?? '')),
-            'trope' => trim((string) ($result['trope'] ?? '')),
-            'segments' => $segments,
-            'call_to_action' => trim((string) ($result['call_to_action'] ?? '')),
-            'estimated_duration_seconds' => max(30, (int) ($result['estimated_duration_seconds'] ?? 120)),
-            'word_count' => $wordCount,
-            'created_at' => date('c'),
-        ];
+        return ShortScriptNormalizer::normalize($result);
     }
 }

@@ -71,6 +71,7 @@ return function (App $app) {
 
     $app->group('/shorts', function (RouteCollectorProxy $shorts) {
         $shorts->get('', [ShortController::class, 'index']);
+        $shorts->put('/{id}', [ShortController::class, 'update']);
         $shorts->delete('/{id}', [ShortController::class, 'delete']);
     })->add(new JwtAuthMiddleware());
 

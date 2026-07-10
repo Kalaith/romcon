@@ -252,6 +252,7 @@ export function PlannerWorkspace() {
               message={workspace.shortsMessage}
               error={workspace.shortsError}
               onGenerateShort={workspace.generateShortScript}
+              onUpdateShort={workspace.updateShortScript}
               onDeleteShort={workspace.deleteShortScript}
             />
           ) : workspace.activeView === 'summary' ? (

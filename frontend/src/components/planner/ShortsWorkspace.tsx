@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getAllowedHeatLevels } from '../../constants/heatLevels';
-import type { ShortScript } from '../../types';
+import type { ShortScript, ShortScriptSegment } from '../../types';
 
 type ShortsWorkspaceProps = {
   shorts: ShortScript[];
@@ -10,6 +10,7 @@ type ShortsWorkspaceProps = {
   message: string | null;
   error: string | null;
   onGenerateShort: (input: { brief: string; setting: string; trope: string; extraDirection: string; heatLevel: string }) => Promise<void>;
+  onUpdateShort: (short: ShortScript) => Promise<boolean>;
   onDeleteShort: (shortId: number) => Promise<void>;
 };
 
@@ -70,13 +71,15 @@ function buildJsonPackage(short: ShortScript, writerProfile: string | null): str
   );
 }
 
-export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, writerProfile, message, error, onGenerateShort, onDeleteShort }: ShortsWorkspaceProps) {
+export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, writerProfile, message, error, onGenerateShort, onUpdateShort, onDeleteShort }: ShortsWorkspaceProps) {
   const [brief, setBrief] = useState('');
   const [setting, setSetting] = useState('');
   const [trope, setTrope] = useState('');
   const [extraDirection, setExtraDirection] = useState('');
   const [heatLevel, setHeatLevel] = useState('sweet');
   const [copied, setCopied] = useState<{ id: number; kind: 'script' | 'json' } | null>(null);
+  const [editing, setEditing] = useState<ShortScript | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const heatOptions = getAllowedHeatLevels(isGuestUser);
   const canGenerate = brief.trim() !== '' || trope.trim() !== '' || extraDirection.trim() !== '';
@@ -87,6 +90,35 @@ export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, writerProfi
     if (short.id) {
       setCopied({ id: short.id, kind });
       window.setTimeout(() => setCopied(null), 2000);
+    }
+  };
+
+  const startEditing = (short: ShortScript) => {
+    setEditing({ ...short, segments: short.segments.map((segment) => ({ ...segment })) });
+  };
+
+  const setEditingField = <K extends keyof ShortScript>(field: K, value: ShortScript[K]) => {
+    setEditing((current) => (current ? { ...current, [field]: value } : current));
+  };
+
+  const setEditingSegment = (index: number, field: keyof ShortScriptSegment, value: string) => {
+    setEditing((current) =>
+      current
+        ? { ...current, segments: current.segments.map((segment, segmentIndex) => (segmentIndex === index ? { ...segment, [field]: value } : segment)) }
+        : current
+    );
+  };
+
+  const saveEditing = async () => {
+    if (!editing) {
+      return;
+    }
+
+    setIsSavingEdit(true);
+    const saved = await onUpdateShort(editing);
+    setIsSavingEdit(false);
+    if (saved) {
+      setEditing(null);
     }
   };
 
@@ -186,75 +218,197 @@ export function ShortsWorkspace({ shorts, isGenerating, isGuestUser, writerProfi
           No shorts yet. Generate one above; every finished script is saved to your shorts library and stays available across all your stories.
         </section>
       ) : (
-        shorts.map((short) => (
-          <article key={short.id ?? short.created_at} className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.06)]">
-            <div className="flex flex-col gap-3 border-b border-stone-200 pb-5 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">Short Script</p>
-                <h3 className="mt-2 font-display text-2xl text-stone-950">{short.title || 'Untitled Short'}</h3>
-                {short.logline ? <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-700">{short.logline}</p> : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {short.trope ? <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-800">{short.trope}</span> : null}
-                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">~{formatDuration(short.estimated_duration_seconds)}</span>
-                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">{short.word_count} words</span>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-[1.25rem] bg-rose-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">Hook</p>
-              <p className="mt-1 text-sm font-semibold leading-6 text-rose-950">{short.hook}</p>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {short.segments.map((segment, segmentIndex) => (
-                <div key={segmentIndex} className="rounded-[1.25rem] border border-stone-200 px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">{segment.time_range}</span>
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">{segment.beat}</span>
+        shorts.map((short) =>
+          editing && editing.id === short.id ? (
+            <article key={short.id ?? short.created_at} className="rounded-[2rem] border border-rose-300 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.06)]">
+              <div className="border-b border-stone-200 pb-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">Editing Short</p>
+                <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
+                  <div>
+                    <label className="text-sm font-semibold text-stone-900" htmlFor={`edit-title-${short.id}`}>Title</label>
+                    <input
+                      id={`edit-title-${short.id}`}
+                      className="mt-2 w-full rounded-full border border-stone-200 bg-white px-4 py-3 text-sm text-stone-950 outline-none focus:border-rose-400"
+                      value={editing.title}
+                      onChange={(event) => setEditingField('title', event.target.value)}
+                    />
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-stone-800">{segment.narration}</p>
-                  {segment.on_screen_text ? (
-                    <p className="mt-2 text-xs font-semibold text-stone-500">ON SCREEN: {segment.on_screen_text}</p>
-                  ) : null}
+                  <div>
+                    <label className="text-sm font-semibold text-stone-900" htmlFor={`edit-trope-${short.id}`}>Trope</label>
+                    <input
+                      id={`edit-trope-${short.id}`}
+                      className="mt-2 w-full rounded-full border border-stone-200 bg-white px-4 py-3 text-sm text-stone-950 outline-none focus:border-rose-400"
+                      value={editing.trope}
+                      onChange={(event) => setEditingField('trope', event.target.value)}
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            {short.call_to_action ? (
-              <div className="mt-4 rounded-[1.25rem] bg-stone-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Call to action</p>
-                <p className="mt-1 text-sm leading-6 text-stone-800">{short.call_to_action}</p>
+                <div className="mt-4">
+                  <label className="text-sm font-semibold text-stone-900" htmlFor={`edit-logline-${short.id}`}>Logline</label>
+                  <textarea
+                    id={`edit-logline-${short.id}`}
+                    className="mt-2 min-h-20 w-full rounded-[1.25rem] border border-stone-200 bg-white px-4 py-3 text-sm text-stone-950 outline-none focus:border-rose-400"
+                    value={editing.logline}
+                    onChange={(event) => setEditingField('logline', event.target.value)}
+                  />
+                </div>
               </div>
-            ) : null}
 
-            <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <button
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
-                onClick={() => void copyShort(short, 'script')}
-                type="button"
-              >
-                {copied !== null && copied.id === short.id && copied.kind === 'script' ? 'Copied!' : 'Copy script'}
-              </button>
-              <button
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
-                onClick={() => void copyShort(short, 'json')}
-                type="button"
-              >
-                {copied !== null && copied.id === short.id && copied.kind === 'json' ? 'Copied!' : 'Copy JSON'}
-              </button>
-              {short.id ? (
+              <p className="mt-5 text-sm text-stone-600">The first segment is the hook: its narration is what plays in the opening three seconds.</p>
+
+              <div className="mt-3 space-y-4">
+                {editing.segments.map((segment, segmentIndex) => (
+                  <div key={segmentIndex} className="rounded-[1.25rem] border border-stone-200 px-4 py-4">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600" htmlFor={`edit-beat-${short.id}-${segmentIndex}`}>Beat</label>
+                        <input
+                          id={`edit-beat-${short.id}-${segmentIndex}`}
+                          className="mt-1 w-full rounded-full border border-stone-200 bg-white px-4 py-2 text-sm text-stone-950 outline-none focus:border-rose-400"
+                          value={segment.beat}
+                          onChange={(event) => setEditingSegment(segmentIndex, 'beat', event.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500" htmlFor={`edit-time-${short.id}-${segmentIndex}`}>Time range</label>
+                        <input
+                          id={`edit-time-${short.id}-${segmentIndex}`}
+                          className="mt-1 w-full rounded-full border border-stone-200 bg-white px-4 py-2 text-sm text-stone-950 outline-none focus:border-rose-400"
+                          value={segment.time_range}
+                          onChange={(event) => setEditingSegment(segmentIndex, 'time_range', event.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500" htmlFor={`edit-narration-${short.id}-${segmentIndex}`}>Narration</label>
+                      <textarea
+                        id={`edit-narration-${short.id}-${segmentIndex}`}
+                        className="mt-1 min-h-24 w-full rounded-[1.25rem] border border-stone-200 bg-white px-4 py-3 text-sm leading-6 text-stone-950 outline-none focus:border-rose-400"
+                        value={segment.narration}
+                        onChange={(event) => setEditingSegment(segmentIndex, 'narration', event.target.value)}
+                      />
+                    </div>
+                    <div className="mt-3">
+                      <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500" htmlFor={`edit-caption-${short.id}-${segmentIndex}`}>On-screen text</label>
+                      <input
+                        id={`edit-caption-${short.id}-${segmentIndex}`}
+                        className="mt-1 w-full rounded-full border border-stone-200 bg-white px-4 py-2 text-sm text-stone-950 outline-none focus:border-rose-400"
+                        value={segment.on_screen_text}
+                        onChange={(event) => setEditingSegment(segmentIndex, 'on_screen_text', event.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm font-semibold text-stone-900" htmlFor={`edit-cta-${short.id}`}>Call to action</label>
+                <textarea
+                  id={`edit-cta-${short.id}`}
+                  className="mt-2 min-h-16 w-full rounded-[1.25rem] border border-stone-200 bg-white px-4 py-3 text-sm text-stone-950 outline-none focus:border-rose-400"
+                  value={editing.call_to_action}
+                  onChange={(event) => setEditingField('call_to_action', event.target.value)}
+                />
+              </div>
+
+              <div className="mt-5 flex flex-wrap justify-end gap-3">
                 <button
-                  className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800"
-                  onClick={() => void onDeleteShort(short.id as number)}
+                  className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
+                  disabled={isSavingEdit}
+                  onClick={() => setEditing(null)}
                   type="button"
                 >
-                  Delete
+                  Cancel
                 </button>
+                <button
+                  className="rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-rose-300"
+                  disabled={isSavingEdit}
+                  onClick={() => void saveEditing()}
+                  type="button"
+                >
+                  {isSavingEdit ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
+            </article>
+          ) : (
+            <article key={short.id ?? short.created_at} className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.06)]">
+              <div className="flex flex-col gap-3 border-b border-stone-200 pb-5 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">Short Script</p>
+                  <h3 className="mt-2 font-display text-2xl text-stone-950">{short.title || 'Untitled Short'}</h3>
+                  {short.logline ? <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-700">{short.logline}</p> : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {short.trope ? <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-800">{short.trope}</span> : null}
+                  <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">~{formatDuration(short.estimated_duration_seconds)}</span>
+                  <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">{short.word_count} words</span>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[1.25rem] bg-rose-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">Hook</p>
+                <p className="mt-1 text-sm font-semibold leading-6 text-rose-950">{short.hook}</p>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {short.segments.map((segment, segmentIndex) => (
+                  <div key={segmentIndex} className="rounded-[1.25rem] border border-stone-200 px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">{segment.time_range}</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">{segment.beat}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-stone-800">{segment.narration}</p>
+                    {segment.on_screen_text ? (
+                      <p className="mt-2 text-xs font-semibold text-stone-500">ON SCREEN: {segment.on_screen_text}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+
+              {short.call_to_action ? (
+                <div className="mt-4 rounded-[1.25rem] bg-stone-50 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">Call to action</p>
+                  <p className="mt-1 text-sm leading-6 text-stone-800">{short.call_to_action}</p>
+                </div>
               ) : null}
-            </div>
-          </article>
-        ))
+
+              <div className="mt-5 flex flex-wrap justify-end gap-3">
+                {short.id ? (
+                  <button
+                    className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
+                    onClick={() => startEditing(short)}
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                ) : null}
+                <button
+                  className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
+                  onClick={() => void copyShort(short, 'script')}
+                  type="button"
+                >
+                  {copied !== null && copied.id === short.id && copied.kind === 'script' ? 'Copied!' : 'Copy script'}
+                </button>
+                <button
+                  className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800"
+                  onClick={() => void copyShort(short, 'json')}
+                  type="button"
+                >
+                  {copied !== null && copied.id === short.id && copied.kind === 'json' ? 'Copied!' : 'Copy JSON'}
+                </button>
+                {short.id ? (
+                  <button
+                    className="rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800"
+                    onClick={() => void onDeleteShort(short.id as number)}
+                    type="button"
+                  >
+                    Delete
+                  </button>
+                ) : null}
+              </div>
+            </article>
+          )
+        )
       )}
     </section>
   );

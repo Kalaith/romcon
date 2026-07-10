@@ -7,6 +7,11 @@ export const shortsApi = {
     return response.data.data as ShortScript[];
   },
 
+  async update(short: ShortScript): Promise<ShortScript> {
+    const response = await api.put(`/shorts/${short.id}`, short);
+    return response.data.data as ShortScript;
+  },
+
   async remove(shortId: number): Promise<void> {
     await api.delete(`/shorts/${shortId}`);
   },

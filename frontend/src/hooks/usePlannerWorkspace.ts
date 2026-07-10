@@ -336,6 +336,19 @@ export function usePlannerWorkspace() {
     );
   };
 
+  const updateShortScript = async (short: ShortScript): Promise<boolean> => {
+    try {
+      setShortsError(null);
+      const saved = await shortsApi.update(short);
+      setShorts((current) => current.map((entry) => (entry.id === saved.id ? saved : entry)));
+      setShortsMessage('Short updated.');
+      return true;
+    } catch (taskError) {
+      setShortsError(taskError instanceof Error ? taskError.message : 'Unable to save this short.');
+      return false;
+    }
+  };
+
   const deleteShortScript = async (shortId: number) => {
     try {
       setShortsError(null);
@@ -955,6 +968,7 @@ export function usePlannerWorkspace() {
     generateCastMemberFromPrompt,
     generateChapterDraft,
     generateShortScript,
+    updateShortScript,
     deleteShortScript,
     beatAudit,
     runBeatAudit,
